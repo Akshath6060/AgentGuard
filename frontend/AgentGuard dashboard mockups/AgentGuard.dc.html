@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<![CDATA[<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;padding:0}
+body{font-family:Inter,system-ui,sans-serif;background:#F7F8FA;color:#111827;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#4F46E5;text-decoration:none}
+a:hover{color:#3730A3}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#D8DBE2;border-radius:8px;border:3px solid #F7F8FA}
+@keyframes agpulse{0%{opacity:.35}50%{opacity:1}100%{opacity:.35}}
+@keyframes agrise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes agtoast{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes agdraw{from{stroke-dashoffset:520}to{stroke-dashoffset:0}}
+</style>
+</helmet>
+
+<sc-if value="{{ isAuth }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;min-height:100vh;background:#F7F8FA">
+  <div style="width:44%;min-width:380px;background:#1E2A5A;color:#fff;padding:44px 48px;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:30px;height:30px;border-radius:8px;background:#4F46E5;display:flex;align-items:center;justify-content:center">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"></path><path d="M9 12l2 2 4-4"></path></svg>
+      </div>
+      <span style="font-size:15px;font-weight:600">AgentGuard</span>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;max-width:420px">
+      <h1 style="margin:0 0 14px;font-size:34px;line-height:1.2;font-weight:600;letter-spacing:-0.025em;text-wrap:pretty">Secure payments for autonomous AI agents</h1>
+      <p style="margin:0 0 34px;font-size:15px;line-height:1.6;color:#B9C2DE">Govern, monitor and protect every transaction your agents make — before the money moves.</p>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;align-items:flex-start;gap:11px">
+          <svg style="margin-top:2px;flex:none" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#7C8DC4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"></path></svg>
+          <span style="font-size:13.5px;color:#D7DEF2">Policy checks run in under 400 ms, before authorisation</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:11px">
+          <svg style="margin-top:2px;flex:none" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#7C8DC4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"></path></svg>
+          <span style="font-size:13.5px;color:#D7DEF2">Human approval only when a rule genuinely needs a person</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:11px">
+          <svg style="margin-top:2px;flex:none" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#7C8DC4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"></path></svg>
+          <span style="font-size:13.5px;color:#D7DEF2">Immutable audit trail for every agent decision</span>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;padding-top:22px;border-top:1px solid rgba(255,255,255,.12)">
+      <span style="width:24px;height:24px;border-radius:6px;background:#fff;color:#0C2451;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">R</span>
+      <span style="font-size:12.5px;color:#B9C2DE">Payments settled through Razorpay</span>
+    </div>
+  </div>
+
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:40px">
+    <div style="width:100%;max-width:380px">
+      <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+        <div style="animation:agrise .25s ease both">
+          <h2 style="margin:0 0 6px;font-size:24px;font-weight:600;letter-spacing:-0.02em">Sign in</h2>
+          <p style="margin:0 0 26px;font-size:13.5px;color:#6B7280">Use your work account to access the AgentGuard console.</p>
+          <label style="display:block;font-size:12.5px;font-weight:500;color:#4B5563;margin-bottom:6px">Work email</label>
+          <input value="ops@nexora.in" style="width:100%;height:44px;border:1px solid #E5E7EB;border-radius:8px;padding:0 12px;font:400 13.5px Inter,sans-serif;outline:0;margin-bottom:14px;background:#fff" style-focus="border-color:#4F46E5;box-shadow:0 0 0 3px rgba(79,70,229,.12)">
+          <label style="display:block;font-size:12.5px;font-weight:500;color:#4B5563;margin-bottom:6px">Password</label>
+          <input type="password" value="demopassword" style="width:100%;height:44px;border:1px solid #E5E7EB;border-radius:8px;padding:0 12px;font:400 13.5px Inter,sans-serif;outline:0;background:#fff" style-focus="border-color:#4F46E5;box-shadow:0 0 0 3px rgba(79,70,229,.12)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin:12px 0 20px">
+            <span style="display:flex;align-items:center;gap:8px;font-size:13px;color:#4B5563"><span style="width:16px;height:16px;border-radius:4px;border:1.5px solid #4F46E5;background:#4F46E5;display:flex;align-items:center;justify-content:center"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"></path></svg></span>Keep me signed in</span>
+            <a href="#" style="font-size:13px">Forgot password?</a>
+          </div>
+          <button onClick="{{ submitLogin }}" style="width:100%;height:44px;border:0;border-radius:8px;background:#4F46E5;color:#fff;font:500 14px Inter,sans-serif;cursor:pointer" style-hover="background:#4338CA">{{ loginLabel }}</button>
+          <div style="display:flex;align-items:center;gap:12px;margin:18px 0"><span style="flex:1;height:1px;background:#E5E7EB"></span><span style="font-size:12px;color:#9CA3AF">or</span><span style="flex:1;height:1px;background:#E5E7EB"></span></div>
+          <button onClick="{{ submitLogin }}" style="width:100%;height:44px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;color:#111827;font:500 13.5px Inter,sans-serif;cursor:pointer" style-hover="background:#F3F4F6">Continue with SSO</button>
+          <p style="margin:22px 0 0;font-size:12.5px;color:#9CA3AF;text-align:center">Demo environment — any credentials continue.</p>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isVerify }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:agrise .25s ease both">
+          <h2 style="margin:0 0 6px;font-size:24px;font-weight:600;letter-spacing:-0.02em">Two-factor verification</h2>
+          <p style="margin:0 0 26px;font-size:13.5px;color:#6B7280">Enter the 6-digit code from your authenticator app.</p>
+          <div style="display:flex;gap:9px;margin-bottom:20px">
+            <sc-for list="{{ codeCells }}" as="c" hint-placeholder-count="6">
+              <span style="flex:1;height:52px;border:1px solid {{ c.border }};border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:600;background:#fff">{{ c.value }}</span>
+            </sc-for>
+          </div>
+          <button onClick="{{ submitVerify }}" style="width:100%;height:44px;border:0;border-radius:8px;background:#4F46E5;color:#fff;font:500 14px Inter,sans-serif;cursor:pointer" style-hover="background:#4338CA">Verify and continue</button>
+          <button onClick="{{ backToLogin }}" style="width:100%;height:40px;margin-top:10px;border:0;background:transparent;color:#6B7280;font:500 13px Inter,sans-serif;cursor:pointer">Back to sign in</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isWorkspace }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:agrise .25s ease both">
+          <h2 style="margin:0 0 6px;font-size:24px;font-weight:600;letter-spacing:-0.02em">Choose a workspace</h2>
+          <p style="margin:0 0 22px;font-size:13.5px;color:#6B7280">You have access to two AgentGuard workspaces.</p>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ workspaces }}" as="w" hint-placeholder-count="2">
+              <button onClick="{{ w.enter }}" style="display:flex;align-items:center;gap:12px;padding:14px;border:1px solid #E5E7EB;background:#fff;border-radius:10px;cursor:pointer;text-align:left" style-hover="border-color:#C7D2FE;background:#FAFAFF">
+                <span style="width:34px;height:34px;border-radius:8px;background:{{ w.bg }};color:{{ w.fg }};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">{{ w.initials }}</span>
+                <span style="flex:1;display:flex;flex-direction:column;gap:2px">
+                  <span style="font-size:13.5px;font-weight:600;color:#111827">{{ w.name }}</span>
+                  <span style="font-size:12.5px;color:#6B7280">{{ w.meta }}</span>
+                </span>
+                <span style="font-size:11.5px;font-weight:500;padding:3px 9px;border-radius:6px;background:{{ w.envBg }};color:{{ w.envFg }}">{{ w.env }}</span>
+              </button>
+            </sc-for>
+          </div>
+          <button onClick="{{ backToLogin }}" style="width:100%;height:40px;margin-top:14px;border:0;background:transparent;color:#6B7280;font:500 13px Inter,sans-serif;cursor:pointer">Sign in with a different account</button>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;min-height:100vh;background:#F7F8FA">
+
+  <aside style="width:244px;flex:none;background:#FFFFFF;border-right:1px solid #E5E7EB;display:flex;flex-direction:column;position:sticky;top:0;height:100vh">
+    <div style="display:flex;align-items:center;gap:10px;padding:20px 20px 18px">
+      <div style="width:30px;height:30px;border-radius:8px;background:#4F46E5;display:flex;align-items:center;justify-content:center">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"></path><path d="M9 12l2 2 4-4"></path></svg>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <span style="font-size:15px;font-weight:600;letter-spacing:-0.01em">AgentGuard</span>
+        <span style="font-size:10.5px;color:#9CA3AF;letter-spacing:0.02em">AI PAYMENT GOVERNANCE</span>
+      </div>
+    </div>
+
+    <nav style="display:flex;flex-direction:column;gap:2px;padding:6px 12px;flex:1">
+      <span style="font-size:10.5px;font-weight:600;color:#9CA3AF;letter-spacing:0.06em;padding:10px 10px 6px">MONITOR</span>
+      <button onClick="{{ goOverview }}" style="display:flex;align-items:center;gap:10px;padding:9px 10px;border:0;border-radius:8px;cursor:pointer;font:500 13.5px Inter,sans-serif;text-align:left;background:{{ nav.overview.bg }};color:{{ nav.overview.fg }}" style-hover="background:#F3F4F6">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"></rect><rect x="14" y="3" width="7" height="5" rx="1.5"></rect><rect x="14" y="12" width="7" height="9" rx="1.5"></rect><rect x="3" y="16" width="7" height="5" rx="1.5"></rect></svg>Overview</button>
+      <button onClick="{{ goAgents }}" style="display:flex;align-items:center;gap:10px;padding:9px 10px;border:0;border-radius:8px;cursor:pointer;font:500 13.5px Inter,sans-serif;text-align:left;background:{{ nav.agents.bg }};color:{{ nav.agents.fg }}" style-hover="background:#F3F4F6">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="3"></rect><path d="M12 4.5v3.5"></path><circle cx="9.2" cy="14" r="1"></circle><circle cx="14.8" cy="14" r="1"></circle></svg>Agents</button>
+      <button onClick="{{ goTransactions }}" style="display:flex;align-items:center;gap:10px;padding:9px 10px;border:0;border-radius:8px;cursor:pointer;font:500 13.5px Inter,sans-serif;text-align:left;background:{{ nav.transactions.bg }};color:{{ nav.transactions.fg }}" style-hover="background:#F3F4F6">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"></rect><path d="M2.5 10h19"></path></svg>Transactions</button>
+
+      <span style="font-size:10.5px;font-weight:600;color:#9CA3AF;letter-spacing:0.06em;padding:14px 10px 6px">CONTROL</span>
+      <button onClick="{{ goPolicies }}" style="display:flex;align-items:center;gap:10px;padding:9px 10px;border:0;border-radius:8px;cursor:pointer;font:500 13.5px Inter,sans-serif;text-align:left;background:{{ nav.policies.bg }};color:{{ nav.policies.fg }}" style-hover="background:#F3F4F6">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"></path><path d="M9 12l2 2 4-4"></path></svg>Policies</button>
+      <button onClick="{{ goApprovals }}" style="display:flex;align-items:center;gap:10px;padding:9px 10px;border:0;border-radius:8px;cursor:pointer;font:500 13.5px Inter,sans-serif;text-align:left;background:{{ nav.approvals.bg }};color:{{ nav.approvals.fg }}" style-hover="background:#F3F4F6">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M8.3 12.3l2.5 2.5 4.9-5.4"></path></svg>Approvals
+        <span style="margin-left:auto;font-size:11px;font-weight:600;background:#FEF3C7;color:#B45309;border-radius:999px;padding:1px 7px">3</span></button>
+      <button onClick="{{ goRisk }}" style="display:flex;align-items:center;gap:10px;padding:9px 10px;border:0;border-radius:8px;cursor:pointer;font:500 13.5px Inter,sans-serif;text-align:left;background:{{ nav.risk.bg }};color:{{ nav.risk.fg }}" style-hover="background:#F3F4F6">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"></path><path d="M12 8.5v3.6"></path><path d="M12 15.4v.1"></path></svg>Risk Center</button>
+      <button onClick="{{ goAudit }}" style="display:flex;align-items:center;gap:10px;padding:9px 10px;border:0;border-radius:8px;cursor:pointer;font:500 13.5px Inter,sans-serif;text-align:left;background:{{ nav.audit.bg }};color:{{ nav.audit.fg }}" style-hover="background:#F3F4F6">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="3" width="15" height="18" rx="2.5"></rect><path d="M8.5 8h7M8.5 12h7M8.5 16h4"></path></svg>Audit Logs</button>
+
+      <div style="flex:1"></div>
+
+      <button onClick="{{ goDevelopers }}" style="display:flex;align-items:center;gap:10px;padding:9px 10px;border:0;border-radius:8px;cursor:pointer;font:500 13.5px Inter,sans-serif;text-align:left;background:{{ nav.developers.bg }};color:{{ nav.developers.fg }}" style-hover="background:#F3F4F6">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 7.5L3.5 12l5 4.5M15.5 7.5l5 4.5-5 4.5"></path></svg>Developers</button>
+      <button onClick="{{ goSettings }}" style="display:flex;align-items:center;gap:10px;padding:9px 10px;border:0;border-radius:8px;cursor:pointer;font:500 13.5px Inter,sans-serif;text-align:left;background:{{ nav.settings.bg }};color:{{ nav.settings.fg }}" style-hover="background:#F3F4F6">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.4"></circle><path d="M12 2.6v2.4M12 19v2.4M2.6 12H5M19 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M18.7 5.3L17 7M7 17l-1.7 1.7"></path></svg>Settings</button>
+    </nav>
+
+    <div style="border-top:1px solid #E5E7EB;padding:12px;display:flex;align-items:center;gap:10px">
+      <div style="width:32px;height:32px;border-radius:8px;background:#1E2A5A;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">{{ wsInitials }}</div>
+      <div style="display:flex;flex-direction:column;min-width:0">
+        <span style="font-size:12.5px;font-weight:600">{{ wsName }}</span>
+        <span style="font-size:11px;color:#6B7280;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ wsEmail }}</span>
+      </div>
+      <svg style="margin-left:auto" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 10l4 4 4-4"></path></svg>
+    </div>
+  </aside>
+
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+
+    <header style="height:60px;flex:none;background:#FFFFFF;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;gap:16px;padding:0 24px;position:sticky;top:0;z-index:40">
+      <span style="font-size:14.5px;font-weight:600">{{ pageTitle }}</span>
+      <div style="display:flex;align-items:center;gap:8px;margin-left:12px;background:#F7F8FA;border:1px solid #E5E7EB;border-radius:8px;padding:0 10px;height:36px;width:300px" style-focus="border-color:#4F46E5">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg>
+        <input placeholder="Search agents, transactions, merchants" style="border:0;outline:0;background:transparent;font:400 13px Inter,sans-serif;color:#111827;width:100%">
+      </div>
+      <div style="flex:1"></div>
+      <div style="display:flex;align-items:center;gap:6px;background:#EEF2FF;border:1px solid #E0E7FF;color:#3730A3;border-radius:999px;padding:5px 10px;font-size:11.5px;font-weight:500">
+        <span style="width:6px;height:6px;border-radius:50%;background:#16A34A;animation:agpulse 2s infinite"></span>Live monitoring
+      </div>
+      <button style="width:36px;height:36px;border:1px solid #E5E7EB;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative" style-hover="background:#F3F4F6">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#4B5563" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15V10a6 6 0 10-12 0v5l-1.5 2.5h15z"></path><path d="M10 19.5a2 2 0 004 0"></path></svg>
+        <span style="position:absolute;top:7px;right:8px;width:6px;height:6px;border-radius:50%;background:#DC2626"></span>
+      </button>
+      <div style="position:relative">
+        <div onClick="{{ toggleUserMenu }}" style="width:34px;height:34px;border-radius:999px;background:#4F46E5;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:600;cursor:pointer">RS</div>
+        <sc-if value="{{ userMenu }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;top:44px;right:0;width:230px;background:#fff;border:1px solid #E5E7EB;border-radius:10px;box-shadow:0 12px 32px rgba(17,24,39,.14);padding:6px;animation:agrise .16s ease both">
+            <div style="padding:10px 10px 12px;border-bottom:1px solid #F3F4F6;margin-bottom:6px">
+              <div style="font-size:13px;font-weight:600">Riya Sharma</div>
+              <div style="font-size:12px;color:#6B7280">ops@nexora.in · Admin</div>
+            </div>
+            <button onClick="{{ goSettings }}" style="width:100%;text-align:left;border:0;background:transparent;border-radius:7px;padding:9px 10px;font:400 13px Inter,sans-serif;color:#111827;cursor:pointer" style-hover="background:#F3F4F6">Workspace settings</button>
+            <button onClick="{{ switchWorkspace }}" style="width:100%;text-align:left;border:0;background:transparent;border-radius:7px;padding:9px 10px;font:400 13px Inter,sans-serif;color:#111827;cursor:pointer" style-hover="background:#F3F4F6">Switch workspace</button>
+            <button onClick="{{ signOut }}" style="width:100%;text-align:left;border:0;background:transparent;border-radius:7px;padding:9px 10px;font:400 13px Inter,sans-serif;color:#DC2626;cursor:pointer" style-hover="background:#FEF2F2">Sign out</button>
+          </div>
+        </sc-if>
+      </div>
+    </header>
+
+    <main style="flex:1;padding:26px 28px 60px;max-width:1400px;width:100%">
+
+      <!-- OVERVIEW -->
+      <sc-if value="{{ isOverview }}" hint-placeholder-val="{{ true }}">
+        <div style="animation:agrise .25s ease both">
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px">
+            <div>
+              <h1 style="margin:0 0 5px;font-size:28px;font-weight:600;letter-spacing:-0.02em">Overview</h1>
+              <p style="margin:0;font-size:14px;color:#6B7280">Monitor and control autonomous agent payment activity.</p>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button onClick="{{ goApprovals }}" style="height:38px;padding:0 14px;border:1px solid #E5E7EB;background:#fff;border-radius:8px;font:500 13px Inter,sans-serif;color:#111827;cursor:pointer" style-hover="background:#F3F4F6">Review approvals</button>
+              <button onClick="{{ openAddAgent }}" style="height:38px;padding:0 14px;border:0;background:#4F46E5;color:#fff;border-radius:8px;font:500 13px Inter,sans-serif;cursor:pointer" style-hover="background:#4338CA">+ Add Agent</button>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px">
+            <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:16px 18px">
+              <div style="font-size:12.5px;color:#6B7280;margin-bottom:8px">Active Agents</div>
+              <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:26px;font-weight:600;letter-spacing:-0.02em">12</span><span style="font-size:12px;color:#16A34A;font-weight:500">+2 this week</span></div>
+            </div>
+            <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:16px 18px">
+              <div style="font-size:12.5px;color:#6B7280;margin-bottom:8px">Today's Agent Spend</div>
+              <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:26px;font-weight:600;letter-spacing:-0.02em">₹42,840</span><span style="font-size:12px;color:#6B7280">of ₹1,20,000</span></div>
+            </div>
+            <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:16px 18px">
+              <div style="font-size:12.5px;color:#6B7280;margin-bottom:8px">Blocked Transactions</div>
+              <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:26px;font-weight:600;letter-spacing:-0.02em;color:#DC2626">7</span><span style="font-size:12px;color:#6B7280">₹2.4L prevented</span></div>
+            </div>
+            <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:16px 18px">
+              <div style="font-size:12.5px;color:#6B7280;margin-bottom:8px">Pending Approvals</div>
+              <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:26px;font-weight:600;letter-spacing:-0.02em;color:#D97706">3</span><span style="font-size:12px;color:#6B7280">oldest 2 min</span></div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1.75fr 1fr;gap:16px;margin-bottom:16px">
+            <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:18px 20px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+                <div><h2 style="margin:0 0 3px;font-size:16px;font-weight:600">Spending Overview</h2><span style="font-size:12.5px;color:#6B7280">Agent spend, last 7 days</span></div>
+                <div style="display:flex;background:#F3F4F6;border-radius:8px;padding:3px;gap:2px">
+                  <button onClick="{{ setRange7 }}" style="border:0;cursor:pointer;font:500 12px Inter,sans-serif;padding:5px 11px;border-radius:6px;background:{{ range.d7.bg }};color:{{ range.d7.fg }}">7D</button>
+                  <button onClick="{{ setRange30 }}" style="border:0;cursor:pointer;font:500 12px Inter,sans-serif;padding:5px 11px;border-radius:6px;background:{{ range.d30.bg }};color:{{ range.d30.fg }}">30D</button>
+                  <button onClick="{{ setRange90 }}" style="border:0;cursor:pointer;font:500 12px Inter,sans-serif;padding:5px 11px;border-radius:6px;background:{{ range.d90.bg }};color:{{ range.d90.fg }}">90D</button>
+                </div>
+              </div>
+              <div style="position:relative">
+                <svg viewBox="0 0 620 190" width="100%" height="190" preserveAspectRatio="none">
+                  <defs><linearGradient id="agfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4F46E5" stop-opacity="0.16"></stop><stop offset="100%" stop-color="#4F46E5" stop-opacity="0"></stop></linearGradient></defs>
+                  <line x1="0" y1="20" x2="620" y2="20" stroke="#F3F4F6" stroke-width="1"></line>
+                  <line x1="0" y1="60" x2="620" y2="60" stroke="#F3F4F6" stroke-width="1"></line>
+                  <line x1="0" y1="100" x2="620" y2="100" stroke="#F3F4F6" stroke-width="1"></line>
+                  <line x1="0" y1="140" x2="620" y2="140" stroke="#F3F4F6" stroke-width="1"></line>
+                  <line x1="0" y1="176" x2="620" y2="176" stroke="#E5E7EB" stroke-width="1"></line>
+                  <path d="{{ chart.area }}" fill="url(#agfill)"></path>
+                  <path d="{{ chart.line }}" fill="none" stroke="#4F46E5" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"></path>
+                  <circle cx="{{ chart.lastX }}" cy="{{ chart.lastY }}" r="4.5" fill="#fff" stroke="#4F46E5" stroke-width="2.4"></circle>
+                </svg>
+                <div style="display:flex;justify-content:space-between;margin-top:8px">
+                  <sc-for list="{{ chart.labels }}" as="lbl" hint-placeholder-count="7"><span style="font-size:11.5px;color:#9CA3AF">{{ lbl }}</span></sc-for>
+                </div>
+              </div>
+            </div>
+
+            <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:18px 20px">
+              <h2 style="margin:0 0 3px;font-size:16px;font-weight:600">Risk Distribution</h2>
+              <span style="font-size:12.5px;color:#6B7280">248 evaluated transactions</span>
+              <div style="display:flex;align-items:center;gap:20px;margin-top:18px">
+                <svg width="118" height="118" viewBox="0 0 42 42">
+                  <circle cx="21" cy="21" r="15.9" fill="none" stroke="#F3F4F6" stroke-width="5"></circle>
+                  <circle cx="21" cy="21" r="15.9" fill="none" stroke="#16A34A" stroke-width="5" stroke-dasharray="72 28" stroke-dashoffset="25" stroke-linecap="butt"></circle>
+                  <circle cx="21" cy="21" r="15.9" fill="none" stroke="#D97706" stroke-width="5" stroke-dasharray="21 79" stroke-dashoffset="-47" stroke-linecap="butt"></circle>
+                  <circle cx="21" cy="21" r="15.9" fill="none" stroke="#DC2626" stroke-width="5" stroke-dasharray="7 93" stroke-dashoffset="-68" stroke-linecap="butt"></circle>
+                  <text x="21" y="20.4" text-anchor="middle" font-size="6.2" font-weight="600" fill="#111827" font-family="Inter">72%</text>
+                  <text x="21" y="25.4" text-anchor="middle" font-size="3.1" fill="#6B7280" font-family="Inter">low risk</text>
+                </svg>
+                <div style="display:flex;flex-direction:column;gap:12px;flex:1">
+                  <div style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:2px;background:#16A34A"></span><span style="font-size:13px;color:#4B5563;flex:1">Low Risk</span><span style="font-size:13px;font-weight:600">72%</span></div>
+                  <div style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:2px;background:#D97706"></span><span style="font-size:13px;color:#4B5563;flex:1">Medium Risk</span><span style="font-size:13px;font-weight:600">21%</span></div>
+                  <div style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:2px;background:#DC2626"></span><span style="font-size:13px;color:#4B5563;flex:1">High Risk</span><span style="font-size:13px;font-weight:600">7%</span></div>
+                </div>
+              </div>
+              <div style="margin-top:18px;padding-top:14px;border-top:1px solid #F3F4F6;display:flex;justify-content:space-between">
+                <span style="font-size:12.5px;color:#6B7280">Autonomy rate</span><span style="font-size:12.5px;font-weight:600">93.2% settled without humans</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;overflow-x:auto">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #F3F4F6;min-width:900px">
+              <div style="display:flex;align-items:center;gap:9px">
+                <h2 style="margin:0;font-size:16px;font-weight:600">Live Agent Activity</h2>
+                <span style="width:6px;height:6px;border-radius:50%;background:#16A34A;animation:agpulse 2s infinite"></span>
+              </div>
+              <button onClick="{{ goTransactions }}" style="border:0;background:transparent;color:#4F46E5;font:500 12.5px Inter,sans-serif;cursor:pointer">View all transactions →</button>
+            </div>
+            <sc-for list="{{ activity }}" as="row" hint-placeholder-count="5">
+              <div onClick="{{ row.open }}" style="min-width:900px;display:grid;grid-template-columns:1.6fr 1.4fr 1fr 110px 150px 90px;align-items:center;gap:12px;padding:13px 20px;border-bottom:1px solid #F3F4F6;cursor:pointer" style-hover="background:#FAFAFB">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div style="width:30px;height:30px;flex:none;border-radius:8px;background:{{ row.avatarBg }};color:{{ row.avatarFg }};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600">{{ row.initials }}</div>
+                  <div style="display:flex;flex-direction:column">
+                    <span style="font-size:13.5px;font-weight:500">{{ row.agent }}</span>
+                    <span style="font-size:11.5px;color:#9CA3AF;font-family:'JetBrains Mono',monospace">{{ row.id }}</span>
+                  </div>
+                </div>
+                <span style="font-size:13px;color:#4B5563">{{ row.merchant }}</span>
+                <span style="font-size:13.5px;font-weight:600">{{ row.amount }}</span>
+                <span style="justify-self:start;font-size:11.5px;font-weight:500;padding:3px 9px;border-radius:6px;background:{{ row.riskBg }};color:{{ row.riskFg }}">{{ row.riskLabel }}</span>
+                <span style="justify-self:start;display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:500;padding:3px 9px;border-radius:6px;background:{{ row.statusBg }};color:{{ row.statusFg }}"><span style="width:5px;height:5px;border-radius:50%;background:{{ row.statusFg }}"></span>{{ row.status }}</span>
+                <span style="font-size:12px;color:#9CA3AF;text-align:right">{{ row.time }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- AGENTS -->
+      <sc-if value="{{ isAgents }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:agrise .25s ease both">
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px">
+            <div>
+              <h1 style="margin:0 0 5px;font-size:28px;font-weight:600;letter-spacing:-0.02em">AI Agents</h1>
+              <p style="margin:0;font-size:14px;color:#6B7280">Manage agents, permissions and spending controls.</p>
+            </div>
+            <button onClick="{{ openAddAgent }}" style="height:38px;padding:0 14px;border:0;background:#4F46E5;color:#fff;border-radius:8px;font:500 13px Inter,sans-serif;cursor:pointer" style-hover="background:#4338CA">+ Add Agent</button>
+          </div>
+          <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;overflow-x:auto">
+            <div style="min-width:980px;display:grid;grid-template-columns:1.5fr 1.5fr 100px 1fr 1fr 100px 120px;gap:12px;padding:11px 20px;background:#FAFAFB;border-bottom:1px solid #E5E7EB;font-size:11.5px;font-weight:600;color:#6B7280;letter-spacing:0.03em">
+              <span>AGENT</span><span>PURPOSE</span><span>STATUS</span><span>TODAY SPEND</span><span>MONTHLY SPEND</span><span>RISK</span><span style="text-align:right">LAST ACTIVITY</span>
+            </div>
+            <sc-for list="{{ agents }}" as="a" hint-placeholder-count="5">
+              <div onClick="{{ a.open }}" style="min-width:980px;display:grid;grid-template-columns:1.5fr 1.5fr 100px 1fr 1fr 100px 120px;gap:12px;align-items:center;padding:13px 20px;border-bottom:1px solid #F3F4F6;cursor:pointer" style-hover="background:#FAFAFB">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div style="width:30px;height:30px;flex:none;border-radius:8px;background:{{ a.avatarBg }};color:{{ a.avatarFg }};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600">{{ a.initials }}</div>
+                  <div style="display:flex;flex-direction:column"><span style="font-size:13.5px;font-weight:500">{{ a.name }}</span><span style="font-size:11px;color:#9CA3AF;font-family:'JetBrains Mono',monospace">{{ a.id }}</span></div>
+                </div>
+                <span style="font-size:13px;color:#4B5563">{{ a.purpose }}</span>
+                <span style="justify-self:start;font-size:11.5px;font-weight:500;padding:3px 9px;border-radius:6px;background:{{ a.statusBg }};color:{{ a.statusFg }}">{{ a.status }}</span>
+                <span style="font-size:13px;font-weight:500">{{ a.today }}</span>
+                <div style="display:flex;flex-direction:column;gap:5px">
+                  <span style="font-size:13px;font-weight:500">{{ a.monthly }}</span>
+                  <span style="height:4px;background:#F3F4F6;border-radius:3px;overflow:hidden;display:block"><span style="display:block;height:100%;width:{{ a.pct }};background:{{ a.barColor }}"></span></span>
+                </div>
+                <span style="justify-self:start;font-size:11.5px;font-weight:500;padding:3px 9px;border-radius:6px;background:{{ a.riskBg }};color:{{ a.riskFg }}">{{ a.risk }}</span>
+                <span style="font-size:12.5px;color:#9CA3AF;text-align:right">{{ a.last }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- AGENT PROFILE -->
+      <sc-if value="{{ isAgentProfile }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:agrise .25s ease both">
+          <button onClick="{{ goAgents }}" style="border:0;background:transparent;color:#6B7280;font:500 12.5px Inter,sans-serif;cursor:pointer;padding:0;margin-bottom:14px" style-hover="color:#111827">← Agents</button>
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px">
+            <div style="display:flex;gap:14px">
+              <div style="width:48px;height:48px;border-radius:12px;background:#EEF2FF;color:#4F46E5;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600">TA</div>
+              <div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+                  <h1 style="margin:0;font-size:26px;font-weight:600;letter-spacing:-0.02em">TravelAgent-AI</h1>
+                  <span style="font-size:11.5px;font-weight:500;padding:3px 9px;border-radius:6px;background:#DCFCE7;color:#15803D">Active</span>
+                </div>
+                <p style="margin:0 0 4px;font-size:14px;color:#6B7280">AI travel booking assistant</p>
+                <span style="font-size:12px;color:#9CA3AF;font-family:'JetBrains Mono',monospace">agt_travel_01</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button onClick="{{ pauseAgent }}" style="height:38px;padding:0 14px;border:1px solid #E5E7EB;background:#fff;border-radius:8px;font:500 13px Inter,sans-serif;cursor:pointer" style-hover="background:#F3F4F6">Pause Agent</button>
+              <button onClick="{{ editAgent }}" style="height:38px;padding:0 14px;border:0;background:#4F46E5;color:#fff;border-radius:8px;font:500 13px Inter,sans-serif;cursor:pointer" style-hover="background:#4338CA">Edit Agent</button>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px">
+            <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:16px 18px"><div style="font-size:12.5px;color:#6B7280;margin-bottom:7px">Monthly Limit</div><span style="font-size:22px;font-weight:600">₹50,000</span></div>
+            <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:16px 18px"><div style="font-size:12.5px;color:#6B7280;margin-bottom:7px">Spent</div><span style="font-size:22px;font-weight:600">₹18,700</span></div>
+            <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:16px 18px"><div style="font-size:12.5px;color:#6B7280;margin-bottom:7px">Remaining</div><span style="font-size:22px;font-weight:600;color:#16A34A">₹31,300</span></div>
+            <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:16px 18px"><div style="font-size:12.5px;color:#6B7280;margin-bottom:7px">Transaction Limit</div><span style="font-size:22px;font-weight:600">₹15,000</span></div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:18px 20px;margin-bottom:16px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:10px"><span style="font-size:13.5px;font-weight:500">Monthly spending</span><span style="font-size:13px;color:#6B7280">₹18,700 of ₹50,000 · 37%</span></div>
+            <div style="height:8px;background:#F3F4F6;border-radius:5px;overflow:hidden"><div style="height:100%;width:37%;background:#4F46E5;border-radius:5px"></div></div>
+          </div>
+
+          <div style="display:flex;gap:4px;border-bottom:1px solid #E5E7EB;margin-bottom:18px">
+            <sc-for list="{{ agentTabs }}" as="t" hint-placeholder-count="5">
+              <button onClick="{{ t.select }}" style="border:0;background:transparent;cursor:pointer;font:500 13.5px Inter,sans-serif;padding:10px 14px;color:{{ t.fg }};border-bottom:2px solid {{ t.bar }};margin-bottom:-1px">{{ t.label }}</button>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ agentTabOverview }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+              <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:18px 20px">
+                <h2 style="margin:0 0 4px;font-size:16px;font-weight:600">Permissions</h2>
+                <p style="margin:0 0 16px;font-size:12.5px;color:#6B7280">Categories this agent may spend on.</p>
+                <span style="font-size:11.5px;font-weight:600;color:#15803D;letter-spacing:0.04em">ALLOWED</span>
+                <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0 18px">
+                  <sc-for list="{{ allowed }}" as="p" hint-placeholder-count="4">
+                    <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"></path></svg>
+                      <span style="font-size:13.5px;flex:1">{{ p }}</span>
+                      <span style="width:32px;height:18px;border-radius:999px;background:#16A34A;position:relative;display:block"><span style="position:absolute;top:2px;right:2px;width:14px;height:14px;border-radius:50%;background:#fff"></span></span>
+                    </div>
+                  </sc-for>
+                </div>
+                <span style="font-size:11.5px;font-weight:600;color:#B91C1C;letter-spacing:0.04em">RESTRICTED</span>
+                <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+                  <sc-for list="{{ restricted }}" as="p" hint-placeholder-count="4">
+                    <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;background:#FAFAFB">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+                      <span style="font-size:13.5px;flex:1;color:#6B7280">{{ p }}</span>
+                      <span style="width:32px;height:18px;border-radius:999px;background:#E5E7EB;position:relative;display:block"><span style="position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff"></span></span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:16px">
+                <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:18px 20px">
+                  <h2 style="margin:0 0 4px;font-size:16px;font-weight:600">Spending Controls</h2>
+                  <p style="margin:0 0 14px;font-size:12.5px;color:#6B7280">Hard limits enforced before every payment.</p>
+                  <sc-for list="{{ controls }}" as="c" hint-placeholder-count="5">
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-top:1px solid #F3F4F6">
+                      <span style="font-size:13.5px;color:#4B5563">{{ c.label }}</span>
+                      <span style="font-size:13.5px;font-weight:600;color:{{ c.color }}">{{ c.value }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:18px 20px">
+                  <h2 style="margin:0 0 14px;font-size:16px;font-weight:600">Recent decisions</h2>
+                  <sc-for list="{{ agentRecent }}" as="r" hint-placeholder-count="4">
+                    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid #F3F4F6">
+                      <span style="width:6px;height:6px;border-radius:50%;background:{{ r.color }};flex:none"></span>
+                      <span style="font-size:13px;flex:1">{{ r.text }}</span>
+                      <span style="font-size:12px;color:#9CA3AF">{{ r.time }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ agentTabOther }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:48px;display:flex;flex-direction:column;align-items:center;gap:8px">
+              <div style="width:42px;height:42px;border-radius:10px;background:#F3F4F6;display:flex;align-items:center;justify-content:center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.7" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="3"></rect><path d="M8 10h8M8 14h5"></path></svg>
+              </div>
+              <span style="font-size:14px;font-weight:500">{{ agentTab }} view</span>
+              <span style="font-size:13px;color:#6B7280">Not part of this mockup pass — the Overview tab carries the demo content.</span>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- TRANSACTIONS -->
+      <sc-if value="{{ isTransactions }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:agrise .25s ease both">
+          <h1 style="margin:0 0 5px;font-size:28px;font-weight:600;letter-spacing:-0.02em">Transactions</h1>
+          <p style="margin:0 0 20px;font-size:14px;color:#6B7280">Monitor every payment initiated by autonomous agents.</p>
+
+          <div style="display:flex;gap:4px;border-bottom:1px solid #E5E7EB;margin-bottom:14px">
+            <sc-for list="{{ txTabs }}" as="t" hint-placeholder-count="4">
+              <button onClick="{{ t.select }}" style="border:0;background:transparent;cursor:pointer;font:500 13.5px Inter,sans-serif;padding:10px 14px;color:{{ t.fg }};border-bottom:2px solid {{ t.bar }};margin-bottom:-1px">{{ t.label }}<span style="margin-left:7px;font-size:11.5px;color:#9CA3AF">{{ t.count }}</span></button>
+            </sc-for>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #E5E7EB;border-radius:8px;padding:0 10px;height:38px;flex:1;min-width:240px">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg>
+              <input placeholder="Search transaction ID, merchant or agent" style="border:0;outline:0;background:transparent;font:400 13px Inter,sans-serif;width:100%">
+            </div>
+            <button style="height:38px;padding:0 12px;background:#fff;border:1px solid #E5E7EB;border-radius:8px;font:400 13px Inter,sans-serif;color:#4B5563;cursor:pointer" style-hover="background:#F3F4F6">Today ▾</button>
+            <button style="height:38px;padding:0 12px;background:#fff;border:1px solid #E5E7EB;border-radius:8px;font:400 13px Inter,sans-serif;color:#4B5563;cursor:pointer" style-hover="background:#F3F4F6">Risk: All ▾</button>
+            <button style="height:38px;padding:0 12px;background:#fff;border:1px solid #E5E7EB;border-radius:8px;font:400 13px Inter,sans-serif;color:#4B5563;cursor:pointer" style-hover="background:#F3F4F6">Agent: All ▾</button>
+            <button style="height:38px;padding:0 12px;background:#fff;border:1px solid #E5E7EB;border-radius:8px;font:400 13px Inter,sans-serif;color:#4B5563;cursor:pointer" style-hover="background:#F3F4F6">Status: All ▾</button>
+          </div>
+
+          <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;overflow-x:auto">
+            <div style="min-width:940px;display:grid;grid-template-columns:140px 1.2fr 1.4fr 110px 100px 130px 70px;gap:12px;padding:11px 20px;background:#FAFAFB;border-bottom:1px solid #E5E7EB;font-size:11.5px;font-weight:600;color:#6B7280;letter-spacing:0.03em">
+              <span>TRANSACTION</span><span>AGENT</span><span>MERCHANT</span><span style="text-align:right">AMOUNT</span><span>RISK</span><span>STATUS</span><span style="text-align:right">TIME</span>
+            </div>
+            <sc-for list="{{ visibleTx }}" as="t" hint-placeholder-count="6">
+              <div onClick="{{ t.open }}" style="min-width:940px;display:grid;grid-template-columns:140px 1.2fr 1.4fr 110px 100px 130px 70px;gap:12px;align-items:center;padding:12px 20px;border-bottom:1px solid #F3F4F6;cursor:pointer" style-hover="background:#FAFAFB">
+                <span style="font-size:12.5px;font-family:'JetBrains Mono',monospace;color:#4F46E5">{{ t.id }}</span>
+                <span style="font-size:13px">{{ t.agent }}</span>
+                <span style="font-size:13px;color:#4B5563">{{ t.merchant }}</span>
+                <span style="font-size:13.5px;font-weight:600;text-align:right">{{ t.amount }}</span>
+                <span style="justify-self:start;font-size:11.5px;font-weight:500;padding:3px 9px;border-radius:6px;background:{{ t.riskBg }};color:{{ t.riskFg }}">{{ t.risk }}</span>
+                <span style="justify-self:start;display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:500;padding:3px 9px;border-radius:6px;background:{{ t.statusBg }};color:{{ t.statusFg }}"><span style="width:5px;height:5px;border-radius:50%;background:{{ t.statusFg }}"></span>{{ t.status }}</span>
+                <span style="font-size:12.5px;color:#9CA3AF;text-align:right">{{ t.time }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- RISK ANALYSIS DETAIL -->
+      <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:agrise .25s ease both">
+          <button onClick="{{ goTransactions }}" style="border:0;background:transparent;color:#6B7280;font:500 12.5px Inter,sans-serif;cursor:pointer;padding:0;margin-bottom:14px" style-hover="color:#111827">← Transactions</button>
+
+          <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:22px 24px;margin-bottom:16px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap">
+              <div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+                  <span style="font-size:12.5px;color:#6B7280">Transaction</span>
+                  <span style="font-size:13px;font-family:'JetBrains Mono',monospace;font-weight:500">{{ detail.id }}</span>
+                  <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;letter-spacing:0.04em;padding:4px 10px;border-radius:6px;background:{{ detail.statusBg }};color:{{ detail.statusFg }}">{{ detail.statusUpper }}</span>
+                </div>
+                <div style="font-size:34px;font-weight:600;letter-spacing:-0.025em;margin-bottom:8px">{{ detail.amount }}</div>
+                <div style="display:flex;align-items:center;gap:9px;font-size:14px;color:#4B5563">
+                  <span style="font-weight:500;color:#111827">{{ detail.agent }}</span>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 7l5 5-5 5"></path></svg>
+                  <span>{{ detail.merchant }}</span>
+                </div>
+                <div style="margin-top:12px;display:flex;gap:18px;font-size:12.5px;color:#6B7280">
+                  <span>{{ detail.date }}</span><span>Policy · {{ detail.policy }}</span><span>Category · {{ detail.category }}</span>
+                </div>
+              </div>
+
+              <div style="display:flex;align-items:center;gap:18px;padding:16px 20px;border:1px solid #E5E7EB;border-radius:11px;background:#FAFAFB">
+                <div style="position:relative;width:96px;height:96px;flex:none">
+                  <svg width="96" height="96" viewBox="0 0 42 42">
+                    <circle cx="21" cy="21" r="16.5" fill="none" stroke="#EEF0F3" stroke-width="4"></circle>
+                    <circle cx="21" cy="21" r="16.5" fill="none" stroke="{{ detail.scoreColor }}" stroke-width="4" stroke-linecap="round" stroke-dasharray="{{ detail.scoreDash }}" transform="rotate(-90 21 21)"></circle>
+                  </svg>
+                  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px">
+                    <span style="font-size:21px;font-weight:600;letter-spacing:-0.02em;line-height:1">{{ detail.score }}</span>
+                    <span style="font-size:10px;color:#6B7280;line-height:1">/ 100</span>
+                  </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:5px">
+                  <span style="font-size:11.5px;font-weight:600;color:#6B7280;letter-spacing:0.04em">RISK SCORE</span>
+                  <span style="font-size:15px;font-weight:600;color:{{ detail.scoreColor }}">{{ detail.scoreLabel }}</span>
+                  <span style="font-size:12.5px;color:#6B7280;max-width:180px">{{ detail.scoreNote }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:0;margin-top:22px;padding-top:20px;border-top:1px solid #F3F4F6;flex-wrap:wrap">
+              <sc-for list="{{ pipeline }}" as="s" hint-placeholder-count="5">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:8px;border:1px solid {{ s.border }};background:{{ s.bg }}">
+                    <span style="width:16px;height:16px;border-radius:50%;background:{{ s.dot }};display:flex;align-items:center;justify-content:center">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>
+                    </span>
+                    <span style="font-size:12.5px;font-weight:500;color:{{ s.fg }}">{{ s.label }}</span>
+                  </div>
+                  <span style="color:#D1D5DB;font-size:13px">{{ s.sep }}</span>
+                </div>
+              </sc-for>
+              <button onClick="{{ replay }}" style="margin-left:auto;border:1px solid #E5E7EB;background:#fff;border-radius:8px;height:32px;padding:0 12px;font:500 12.5px Inter,sans-serif;color:#4B5563;cursor:pointer" style-hover="background:#F3F4F6">Replay analysis</button>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px">
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:18px 20px">
+                <h2 style="margin:0 0 4px;font-size:17px;font-weight:600">{{ detail.question }}</h2>
+                <p style="margin:0 0 16px;font-size:12.5px;color:#6B7280">Signals evaluated against the {{ detail.policy }}.</p>
+                <sc-for list="{{ detail.signals }}" as="s" hint-placeholder-count="4">
+                  <div style="display:flex;gap:12px;padding:14px 0;border-top:1px solid #F3F4F6">
+                    <span style="width:8px;height:8px;border-radius:2px;background:{{ s.color }};margin-top:6px;flex:none"></span>
+                    <div style="flex:1">
+                      <div style="display:flex;align-items:center;gap:9px;margin-bottom:3px">
+                        <span style="font-size:13.5px;font-weight:500">{{ s.title }}</span>
+                        <span style="font-size:11px;font-weight:600;padding:2px 7px;border-radius:5px;background:{{ s.bg }};color:{{ s.color }}">{{ s.level }}</span>
+                      </div>
+                      <p style="margin:0;font-size:13px;color:#6B7280">{{ s.detail }}</p>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:18px 20px">
+                <h2 style="margin:0 0 14px;font-size:17px;font-weight:600">Agent Intent</h2>
+                <p style="margin:0 0 14px;font-size:13.5px;color:#4B5563;line-height:1.55">{{ detail.intent }}</p>
+                <div style="border-left:2px solid #4F46E5;padding:2px 0 2px 14px">
+                  <span style="font-size:11.5px;font-weight:600;color:#6B7280;letter-spacing:0.04em">AGENT JUSTIFICATION</span>
+                  <p style="margin:6px 0 0;font-size:13.5px;color:#111827;line-height:1.55;font-style:italic">{{ detail.justification }}</p>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:18px 20px">
+                <h2 style="margin:0 0 4px;font-size:16px;font-weight:600">Policy Evaluation</h2>
+                <p style="margin:0 0 12px;font-size:12.5px;color:#6B7280">{{ detail.policy }}</p>
+                <sc-for list="{{ detail.checks }}" as="c" hint-placeholder-count="5">
+                  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid #F3F4F6">
+                    <span style="font-size:13.5px;color:#4B5563">{{ c.label }}</span>
+                    <span style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:{{ c.color }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ c.color }}"></span>{{ c.result }}</span>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:18px 20px">
+                <h2 style="margin:0 0 12px;font-size:16px;font-weight:600">Actions</h2>
+                <div style="display:flex;flex-direction:column;gap:9px">
+                  <button onClick="{{ approveOnce }}" style="height:40px;border:0;border-radius:8px;background:#4F46E5;color:#fff;font:500 13.5px Inter,sans-serif;cursor:pointer" style-hover="background:#4338CA">Approve Once</button>
+                  <button onClick="{{ rejectTx }}" style="height:40px;border:1px solid #FECACA;border-radius:8px;background:#fff;color:#DC2626;font:500 13.5px Inter,sans-serif;cursor:pointer" style-hover="background:#FEF2F2">Reject Transaction</button>
+                  <button onClick="{{ allowlist }}" style="height:40px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;color:#4B5563;font:500 13.5px Inter,sans-serif;cursor:pointer" style-hover="background:#F3F4F6">Add Merchant to Allowlist</button>
+                </div>
+              </div>
+
+              <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:18px 20px">
+                <span style="font-size:11.5px;font-weight:600;color:#6B7280;letter-spacing:0.04em">PAYMENT PROVIDER</span>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px">
+                  <div style="display:flex;align-items:center;gap:9px">
+                    <span style="width:26px;height:26px;border-radius:6px;background:#0C2451;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">R</span>
+                    <span style="font-size:13.5px;font-weight:500">Razorpay</span>
+                  </div>
+                  <span style="font-size:12.5px;font-weight:600;color:{{ detail.payColor }}">{{ detail.payStatus }}</span>
+                </div>
+                <div style="margin-top:12px;padding-top:12px;border-top:1px solid #F3F4F6;display:flex;justify-content:space-between">
+                  <span style="font-size:12.5px;color:#6B7280">Payment ID</span>
+                  <span style="font-size:12.5px;font-family:'JetBrains Mono',monospace">{{ detail.payId }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- APPROVALS -->
+      <sc-if value="{{ isApprovals }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:agrise .25s ease both;max-width:1000px">
+          <h1 style="margin:0 0 5px;font-size:28px;font-weight:600;letter-spacing:-0.02em">Approval Center</h1>
+          <p style="margin:0 0 20px;font-size:14px;color:#6B7280">Review payments that require human authorisation.</p>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <sc-for list="{{ approvals }}" as="a" hint-placeholder-count="3">
+              <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:20px 22px">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:16px">
+                  <div style="display:flex;gap:12px">
+                    <div style="width:38px;height:38px;border-radius:9px;background:{{ a.avatarBg }};color:{{ a.avatarFg }};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">{{ a.initials }}</div>
+                    <div>
+                      <div style="display:flex;align-items:center;gap:9px;margin-bottom:3px">
+                        <span style="font-size:15px;font-weight:600">{{ a.agent }}</span>
+                        <span style="font-size:12.5px;color:#9CA3AF">→</span>
+                        <span style="font-size:14px;color:#4B5563">{{ a.merchant }}</span>
+                        <span style="font-size:11.5px;font-weight:500;padding:3px 9px;border-radius:6px;background:{{ a.riskBg }};color:{{ a.riskFg }}">{{ a.risk }} risk</span>
+                      </div>
+                      <span style="font-size:12.5px;color:#6B7280">{{ a.purpose }} · Requested {{ a.ago }} · Policy: {{ a.policy }}</span>
+                    </div>
+                  </div>
+                  <span style="font-size:24px;font-weight:600;letter-spacing:-0.02em">{{ a.amount }}</span>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+                  <div style="background:#FAFAFB;border:1px solid #F3F4F6;border-radius:9px;padding:12px 14px">
+                    <span style="font-size:11.5px;font-weight:600;color:#6B7280;letter-spacing:0.04em">WHY APPROVAL IS NEEDED</span>
+                    <p style="margin:6px 0 0;font-size:13px;color:#4B5563;line-height:1.5">{{ a.reason }}</p>
+                  </div>
+                  <div style="background:#FAFAFB;border:1px solid #F3F4F6;border-radius:9px;padding:12px 14px">
+                    <span style="font-size:11.5px;font-weight:600;color:#6B7280;letter-spacing:0.04em">AGENT JUSTIFICATION</span>
+                    <p style="margin:6px 0 0;font-size:13px;color:#111827;line-height:1.5;font-style:italic">{{ a.justification }}</p>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:9px">
+                  <button onClick="{{ a.view }}" style="height:38px;padding:0 14px;border:1px solid #E5E7EB;background:#fff;border-radius:8px;font:500 13px Inter,sans-serif;color:#4B5563;cursor:pointer" style-hover="background:#F3F4F6">View analysis</button>
+                  <div style="flex:1"></div>
+                  <button onClick="{{ a.reject }}" style="height:38px;padding:0 16px;border:1px solid #FECACA;background:#fff;color:#DC2626;border-radius:8px;font:500 13px Inter,sans-serif;cursor:pointer" style-hover="background:#FEF2F2">Reject</button>
+                  <button onClick="{{ a.approve }}" style="height:38px;padding:0 16px;border:0;background:#4F46E5;color:#fff;border-radius:8px;font:500 13px Inter,sans-serif;cursor:pointer" style-hover="background:#4338CA">Approve Payment</button>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <sc-if value="{{ approvalsEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:56px;display:flex;flex-direction:column;align-items:center;gap:8px">
+              <div style="width:42px;height:42px;border-radius:10px;background:#DCFCE7;display:flex;align-items:center;justify-content:center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"></path></svg>
+              </div>
+              <span style="font-size:14.5px;font-weight:500">Queue clear</span>
+              <span style="font-size:13px;color:#6B7280">No agent payments are waiting on a human right now.</span>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- POLICIES -->
+      <sc-if value="{{ isPolicies }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:agrise .25s ease both">
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px">
+            <div>
+              <h1 style="margin:0 0 5px;font-size:28px;font-weight:600;letter-spacing:-0.02em">Policies</h1>
+              <p style="margin:0;font-size:14px;color:#6B7280">Define how autonomous agents are allowed to spend.</p>
+            </div>
+            <button onClick="{{ openPolicy }}" style="height:38px;padding:0 14px;border:0;background:#4F46E5;color:#fff;border-radius:8px;font:500 13px Inter,sans-serif;cursor:pointer" style-hover="background:#4338CA">Create Policy</button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">
+            <sc-for list="{{ policies }}" as="p" hint-placeholder-count="4">
+              <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:18px 20px;cursor:pointer" style-hover="border-color:#C7D2FE">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <span style="width:30px;height:30px;border-radius:8px;background:#EEF2FF;display:flex;align-items:center;justify-content:center">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"></path><path d="M9 12l2 2 4-4"></path></svg>
+                    </span>
+                    <span style="font-size:15px;font-weight:600">{{ p.name }}</span>
+                  </div>
+                  <span style="font-size:11.5px;font-weight:500;padding:3px 9px;border-radius:6px;background:{{ p.statusBg }};color:{{ p.statusFg }}">{{ p.status }}</span>
+                </div>
+                <p style="margin:0 0 14px;font-size:13px;color:#6B7280">{{ p.desc }}</p>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding-top:14px;border-top:1px solid #F3F4F6">
+                  <div><div style="font-size:11.5px;color:#9CA3AF;margin-bottom:3px">Agents</div><span style="font-size:13.5px;font-weight:600">{{ p.agents }}</span></div>
+                  <div><div style="font-size:11.5px;color:#9CA3AF;margin-bottom:3px">Txn limit</div><span style="font-size:13.5px;font-weight:600">{{ p.txnLimit }}</span></div>
+                  <div><div style="font-size:11.5px;color:#9CA3AF;margin-bottom:3px">Monthly</div><span style="font-size:13.5px;font-weight:600">{{ p.monthly }}</span></div>
+                  <div><div style="font-size:11.5px;color:#9CA3AF;margin-bottom:3px">Approval</div><span style="font-size:13.5px;font-weight:600">{{ p.approval }}</span></div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- RISK CENTER -->
+      <sc-if value="{{ isRisk }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:agrise .25s ease both">
+          <h1 style="margin:0 0 5px;font-size:28px;font-weight:600;letter-spacing:-0.02em">Risk Center</h1>
+          <p style="margin:0 0 20px;font-size:14px;color:#6B7280">Security posture across every agent in the workspace.</p>
+
+          <div style="display:grid;grid-template-columns:320px 1fr;gap:16px;margin-bottom:16px">
+            <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:20px;display:flex;align-items:center;gap:18px">
+              <svg width="104" height="104" viewBox="0 0 42 42">
+                <circle cx="21" cy="21" r="16.5" fill="none" stroke="#EEF0F3" stroke-width="4"></circle>
+                <circle cx="21" cy="21" r="16.5" fill="none" stroke="#16A34A" stroke-width="4" stroke-linecap="round" stroke-dasharray="78.8 103.6" transform="rotate(-90 21 21)"></circle>
+                <text x="21" y="21.6" text-anchor="middle" font-size="9" font-weight="600" fill="#111827" font-family="Inter">76</text>
+                <text x="21" y="26.6" text-anchor="middle" font-size="3.2" fill="#6B7280" font-family="Inter">/ 100</text>
+              </svg>
+              <div>
+                <div style="font-size:11.5px;font-weight:600;color:#6B7280;letter-spacing:0.04em;margin-bottom:6px">SECURITY SCORE</div>
+                <div style="font-size:15px;font-weight:600;color:#16A34A;margin-bottom:6px">Healthy</div>
+                <p style="margin:0;font-size:12.5px;color:#6B7280;line-height:1.5">Two agents run without a monthly cap. Tighten to reach 85+.</p>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+              <sc-for list="{{ riskStats }}" as="s" hint-placeholder-count="4">
+                <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:16px 18px;display:flex;flex-direction:column;justify-content:center">
+                  <div style="font-size:12.5px;color:#6B7280;margin-bottom:8px">{{ s.label }}</div>
+                  <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:26px;font-weight:600">{{ s.value }}</span><span style="font-size:12px;color:{{ s.deltaColor }}">{{ s.delta }}</span></div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:16px">
+            <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:18px 20px">
+              <h2 style="margin:0 0 16px;font-size:16px;font-weight:600">Risk Trend · last 14 days</h2>
+              <div style="display:flex;align-items:flex-end;gap:8px;height:150px">
+                <sc-for list="{{ riskBars }}" as="b" hint-placeholder-count="14">
+                  <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:3px;height:100%">
+                    <span style="display:block;background:#DC2626;border-radius:2px 2px 0 0;height:{{ b.high }}"></span>
+                    <span style="display:block;background:#D97706;height:{{ b.med }}"></span>
+                    <span style="display:block;background:#DCE7DA;border-radius:0 0 2px 2px;height:{{ b.low }}"></span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;gap:16px;margin-top:14px;padding-top:12px;border-top:1px solid #F3F4F6">
+                <span style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#6B7280"><span style="width:8px;height:8px;border-radius:2px;background:#DCE7DA"></span>Low</span>
+                <span style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#6B7280"><span style="width:8px;height:8px;border-radius:2px;background:#D97706"></span>Medium</span>
+                <span style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#6B7280"><span style="width:8px;height:8px;border-radius:2px;background:#DC2626"></span>High</span>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:18px 20px">
+                <h2 style="margin:0 0 16px;font-size:16px;font-weight:600">Approved vs Blocked</h2>
+                <div style="display:flex;height:14px;border-radius:4px;overflow:hidden;margin-bottom:12px">
+                  <span style="width:88%;background:#16A34A;display:block"></span><span style="width:5%;background:#D97706;display:block"></span><span style="width:7%;background:#DC2626;display:block"></span>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:12.5px;color:#6B7280"><span>218 approved</span><span>13 review</span><span>17 blocked</span></div>
+              </div>
+              <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:18px 20px">
+                <h2 style="margin:0 0 12px;font-size:16px;font-weight:600">Risk Categories</h2>
+                <sc-for list="{{ riskCats }}" as="c" hint-placeholder-count="4">
+                  <div style="padding:9px 0">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:13px;color:#4B5563">{{ c.label }}</span><span style="font-size:13px;font-weight:600">{{ c.value }}</span></div>
+                    <span style="display:block;height:5px;background:#F3F4F6;border-radius:3px;overflow:hidden"><span style="display:block;height:100%;width:{{ c.pct }};background:#4F46E5"></span></span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- AUDIT -->
+      <sc-if value="{{ isAudit }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:agrise .25s ease both;max-width:1000px">
+          <h1 style="margin:0 0 5px;font-size:28px;font-weight:600;letter-spacing:-0.02em">Audit Logs</h1>
+          <p style="margin:0 0 20px;font-size:14px;color:#6B7280">Complete history of autonomous payment decisions.</p>
+          <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+            <button style="height:38px;padding:0 12px;background:#fff;border:1px solid #E5E7EB;border-radius:8px;font:400 13px Inter,sans-serif;color:#4B5563;cursor:pointer" style-hover="background:#F3F4F6">Agent: All ▾</button>
+            <button style="height:38px;padding:0 12px;background:#fff;border:1px solid #E5E7EB;border-radius:8px;font:400 13px Inter,sans-serif;color:#4B5563;cursor:pointer" style-hover="background:#F3F4F6">Transaction: All ▾</button>
+            <button style="height:38px;padding:0 12px;background:#fff;border:1px solid #E5E7EB;border-radius:8px;font:400 13px Inter,sans-serif;color:#4B5563;cursor:pointer" style-hover="background:#F3F4F6">Action type ▾</button>
+            <button style="height:38px;padding:0 12px;background:#fff;border:1px solid #E5E7EB;border-radius:8px;font:400 13px Inter,sans-serif;color:#4B5563;cursor:pointer" style-hover="background:#F3F4F6">01 Sep 2026 ▾</button>
+            <div style="flex:1"></div>
+            <button style="height:38px;padding:0 12px;background:#fff;border:1px solid #E5E7EB;border-radius:8px;font:500 13px Inter,sans-serif;color:#4B5563;cursor:pointer" style-hover="background:#F3F4F6">Export CSV</button>
+          </div>
+          <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:22px 24px">
+            <sc-for list="{{ audit }}" as="e" hint-placeholder-count="8">
+              <div style="display:grid;grid-template-columns:92px 20px 1fr;gap:14px;align-items:start">
+                <span style="font-size:12.5px;font-family:'JetBrains Mono',monospace;color:#9CA3AF;padding-top:1px">{{ e.time }}</span>
+                <div style="display:flex;flex-direction:column;align-items:center;height:100%">
+                  <span style="width:9px;height:9px;border-radius:50%;background:{{ e.color }};margin-top:4px;flex:none"></span>
+                  <span style="width:1px;flex:1;background:#E5E7EB;min-height:24px"></span>
+                </div>
+                <div style="padding-bottom:18px">
+                  <div style="font-size:13.5px;font-weight:500;margin-bottom:2px">{{ e.title }}</div>
+                  <div style="font-size:12.5px;color:#6B7280">{{ e.meta }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- DEVELOPERS -->
+      <sc-if value="{{ isDevelopers }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:agrise .25s ease both;max-width:900px">
+          <h1 style="margin:0 0 5px;font-size:28px;font-weight:600;letter-spacing:-0.02em">Developers</h1>
+          <p style="margin:0 0 20px;font-size:14px;color:#6B7280">Integrate AgentGuard into your AI agents.</p>
+
+          <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:18px 20px;margin-bottom:16px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <h2 style="margin:0;font-size:16px;font-weight:600">API Keys</h2>
+              <button onClick="{{ generateKey }}" style="height:34px;padding:0 12px;border:1px solid #E5E7EB;background:#fff;border-radius:8px;font:500 12.5px Inter,sans-serif;cursor:pointer" style-hover="background:#F3F4F6">Generate Key</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid #F3F4F6">
+              <div style="flex:1"><div style="font-size:13.5px;font-weight:500;margin-bottom:3px">Test API Key</div><span style="font-size:12.5px;font-family:'JetBrains Mono',monospace;color:#6B7280">ag_test_7f3ba91c4de20a</span></div>
+              <button onClick="{{ copyKey }}" style="height:32px;padding:0 12px;border:1px solid #E5E7EB;background:#fff;border-radius:7px;font:500 12.5px Inter,sans-serif;cursor:pointer" style-hover="background:#F3F4F6">Copy</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid #F3F4F6">
+              <div style="flex:1"><div style="font-size:13.5px;font-weight:500;margin-bottom:3px">Production Key</div><span style="font-size:12.5px;font-family:'JetBrains Mono',monospace;color:#6B7280">ag_live_••••••••••••••</span></div>
+              <button onClick="{{ copyKey }}" style="height:32px;padding:0 12px;border:1px solid #E5E7EB;background:#fff;border-radius:7px;font:500 12.5px Inter,sans-serif;cursor:pointer" style-hover="background:#F3F4F6">Reveal</button>
+              <button onClick="{{ revokeKey }}" style="height:32px;padding:0 12px;border:1px solid #FECACA;background:#fff;color:#DC2626;border-radius:7px;font:500 12.5px Inter,sans-serif;cursor:pointer" style-hover="background:#FEF2F2">Revoke</button>
+            </div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:18px 20px">
+            <h2 style="margin:0 0 4px;font-size:16px;font-weight:600">Integration Example</h2>
+            <p style="margin:0 0 14px;font-size:12.5px;color:#6B7280">Authorize a payment before your agent executes it.</p>
+            <pre style="margin:0 0 14px;background:#0F1729;color:#E2E8F0;border-radius:9px;padding:16px 18px;font:400 12.5px/1.7 'JetBrains Mono',monospace;overflow:auto">const decision = await agentguard.authorize({
+  agent_id: "travel_agent",
+  amount:   8450,
+  currency: "INR",
+  merchant: "IndiGo",
+  purpose:  "Flight booking"
+});</pre>
+            <span style="font-size:11.5px;font-weight:600;color:#6B7280;letter-spacing:0.04em">RESPONSE</span>
+            <pre style="margin:8px 0 0;background:#FAFAFB;border:1px solid #E5E7EB;color:#111827;border-radius:9px;padding:16px 18px;font:400 12.5px/1.7 'JetBrains Mono',monospace;overflow:auto">{
+  "decision":       "APPROVED",
+  "risk_score":     12,
+  "transaction_id": "AGTX-40291"
+}</pre>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- SETTINGS -->
+      <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:agrise .25s ease both;max-width:760px">
+          <h1 style="margin:0 0 5px;font-size:28px;font-weight:600;letter-spacing:-0.02em">Settings</h1>
+          <p style="margin:0 0 20px;font-size:14px;color:#6B7280">Workspace, payment provider and notification preferences.</p>
+          <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:18px 20px;margin-bottom:16px">
+            <h2 style="margin:0 0 14px;font-size:16px;font-weight:600">Workspace</h2>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+              <div><label style="display:block;font-size:12.5px;font-weight:500;color:#4B5563;margin-bottom:6px">Workspace name</label><input value="Nexora Retail" style="width:100%;height:42px;border:1px solid #E5E7EB;border-radius:8px;padding:0 12px;font:400 13.5px Inter,sans-serif;outline:0" style-focus="border-color:#4F46E5;box-shadow:0 0 0 3px rgba(79,70,229,.12)"></div>
+              <div><label style="display:block;font-size:12.5px;font-weight:500;color:#4B5563;margin-bottom:6px">Default currency</label><input value="INR — Indian Rupee" style="width:100%;height:42px;border:1px solid #E5E7EB;border-radius:8px;padding:0 12px;font:400 13.5px Inter,sans-serif;outline:0" style-focus="border-color:#4F46E5;box-shadow:0 0 0 3px rgba(79,70,229,.12)"></div>
+            </div>
+          </div>
+          <div style="background:#fff;border:1px solid #E5E7EB;border-radius:11px;padding:18px 20px">
+            <h2 style="margin:0 0 4px;font-size:16px;font-weight:600">Payment provider</h2>
+            <p style="margin:0 0 14px;font-size:12.5px;color:#6B7280">Approved agent payments settle through this provider.</p>
+            <div style="display:flex;align-items:center;gap:12px;border:1px solid #E5E7EB;border-radius:9px;padding:14px 16px">
+              <span style="width:32px;height:32px;border-radius:7px;background:#0C2451;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">R</span>
+              <div style="flex:1"><div style="font-size:13.5px;font-weight:500">Razorpay</div><span style="font-size:12.5px;color:#6B7280">Connected · acc_NxRa8821kq</span></div>
+              <span style="font-size:11.5px;font-weight:500;padding:3px 9px;border-radius:6px;background:#DCFCE7;color:#15803D">Live</span>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+    </main>
+  </div>
+
+  <!-- POLICY BUILDER MODAL -->
+  <sc-if value="{{ policyOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closePolicy }}" style="position:fixed;inset:0;background:rgba(17,24,39,.45);z-index:80;display:flex;align-items:flex-start;justify-content:center;padding:60px 20px;overflow:auto">
+      <div onClick="{{ stop }}" style="width:640px;background:#fff;border-radius:14px;box-shadow:0 18px 50px rgba(17,24,39,.22);animation:agrise .2s ease both">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid #E5E7EB">
+          <div><h2 style="margin:0 0 3px;font-size:17px;font-weight:600">Create Policy</h2><span style="font-size:12.5px;color:#6B7280">Describe the rules in plain language — AgentGuard structures them.</span></div>
+          <button onClick="{{ closePolicy }}" style="width:30px;height:30px;border:0;background:#F3F4F6;border-radius:7px;cursor:pointer;color:#6B7280;font-size:15px">✕</button>
+        </div>
+        <div style="padding:20px 22px">
+          <label style="display:block;font-size:12.5px;font-weight:500;color:#4B5563;margin-bottom:7px">Describe how this agent should be allowed to spend.</label>
+          <textarea rows="4" placeholder="Allow TravelAgent to spend up to ₹15,000 on flights and hotels without approval. Ask for approval above ₹15,000 and block unknown merchants." style="width:100%;border:1px solid #E5E7EB;border-radius:8px;padding:12px;font:400 13.5px/1.6 Inter,sans-serif;outline:0;resize:vertical" style-focus="border-color:#4F46E5;box-shadow:0 0 0 3px rgba(79,70,229,.12)"></textarea>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:12px">
+            <button onClick="{{ generatePolicy }}" style="height:40px;padding:0 16px;border:0;background:#4F46E5;color:#fff;border-radius:8px;font:500 13.5px Inter,sans-serif;cursor:pointer" style-hover="background:#4338CA">{{ generateLabel }}</button>
+            <span style="font-size:12.5px;color:#9CA3AF">{{ generateHint }}</span>
+          </div>
+
+          <sc-if value="{{ policyGenerated }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:20px;border:1px solid #E5E7EB;border-radius:11px;overflow:hidden;animation:agrise .25s ease both">
+              <div style="display:flex;align-items:center;gap:8px;padding:11px 16px;background:#FAFAFB;border-bottom:1px solid #E5E7EB">
+                <span style="width:6px;height:6px;border-radius:50%;background:#16A34A"></span>
+                <span style="font-size:12.5px;font-weight:600">Structured rules</span>
+                <span style="font-size:12px;color:#9CA3AF">7 rules · ready to enforce</span>
+              </div>
+              <sc-for list="{{ generatedRules }}" as="r" hint-placeholder-count="7">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid #F3F4F6">
+                  <span style="font-size:13px;color:#6B7280">{{ r.label }}</span>
+                  <span style="font-size:13px;font-weight:600;color:{{ r.color }}">{{ r.value }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;gap:9px;margin-top:16px;justify-content:flex-end">
+              <button onClick="{{ closePolicy }}" style="height:40px;padding:0 16px;border:1px solid #E5E7EB;background:#fff;border-radius:8px;font:500 13.5px Inter,sans-serif;color:#4B5563;cursor:pointer" style-hover="background:#F3F4F6">Edit Rules</button>
+              <button onClick="{{ savePolicy }}" style="height:40px;padding:0 16px;border:0;background:#4F46E5;color:#fff;border-radius:8px;font:500 13.5px Inter,sans-serif;cursor:pointer" style-hover="background:#4338CA">Save Policy</button>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ADD AGENT MODAL -->
+  <sc-if value="{{ agentModalOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeAddAgent }}" style="position:fixed;inset:0;background:rgba(17,24,39,.45);z-index:80;display:flex;align-items:flex-start;justify-content:center;padding:60px 20px;overflow:auto">
+      <div onClick="{{ stop }}" style="width:660px;background:#fff;border-radius:14px;box-shadow:0 18px 50px rgba(17,24,39,.22);animation:agrise .2s ease both">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid #E5E7EB">
+          <h2 style="margin:0;font-size:17px;font-weight:600">Add Agent</h2>
+          <button onClick="{{ closeAddAgent }}" style="width:30px;height:30px;border:0;background:#F3F4F6;border-radius:7px;cursor:pointer;color:#6B7280;font-size:15px">✕</button>
+        </div>
+        <div style="display:flex;gap:6px;padding:16px 22px;border-bottom:1px solid #F3F4F6">
+          <sc-for list="{{ steps }}" as="s" hint-placeholder-count="5">
+            <div style="flex:1;display:flex;flex-direction:column;gap:7px">
+              <span style="height:3px;border-radius:2px;background:{{ s.bar }};display:block"></span>
+              <span style="font-size:11.5px;font-weight:500;color:{{ s.fg }}">{{ s.label }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="padding:20px 22px;min-height:230px">
+          <sc-if value="{{ step1 }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div><label style="display:block;font-size:12.5px;font-weight:500;color:#4B5563;margin-bottom:6px">Agent name</label><input placeholder="e.g. TravelAgent" style="width:100%;height:42px;border:1px solid #E5E7EB;border-radius:8px;padding:0 12px;font:400 13.5px Inter,sans-serif;outline:0" style-focus="border-color:#4F46E5;box-shadow:0 0 0 3px rgba(79,70,229,.12)"></div>
+              <div><label style="display:block;font-size:12.5px;font-weight:500;color:#4B5563;margin-bottom:6px">Description</label><input placeholder="What does this agent do?" style="width:100%;height:42px;border:1px solid #E5E7EB;border-radius:8px;padding:0 12px;font:400 13.5px Inter,sans-serif;outline:0" style-focus="border-color:#4F46E5;box-shadow:0 0 0 3px rgba(79,70,229,.12)"></div>
+              <div>
+                <label style="display:block;font-size:12.5px;font-weight:500;color:#4B5563;margin-bottom:8px">Agent type</label>
+                <div style="display:flex;flex-wrap:wrap;gap:8px">
+                  <sc-for list="{{ agentTypes }}" as="t" hint-placeholder-count="6">
+                    <button onClick="{{ t.select }}" style="height:34px;padding:0 14px;border:1px solid {{ t.border }};background:{{ t.bg }};color:{{ t.fg }};border-radius:8px;font:500 12.5px Inter,sans-serif;cursor:pointer">{{ t.label }}</button>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ step2 }}" hint-placeholder-val="{{ false }}">
+            <label style="display:block;font-size:12.5px;font-weight:500;color:#4B5563;margin-bottom:10px">Select allowed spending categories.</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+              <sc-for list="{{ categories }}" as="c" hint-placeholder-count="8">
+                <button onClick="{{ c.toggle }}" style="display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid {{ c.border }};background:{{ c.bg }};border-radius:8px;cursor:pointer;text-align:left;font:400 13.5px Inter,sans-serif;color:#111827">
+                  <span style="width:17px;height:17px;border-radius:5px;border:1.5px solid {{ c.boxBorder }};background:{{ c.box }};display:flex;align-items:center;justify-content:center">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>
+                  </span>{{ c.label }}
+                </button>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ step3 }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div><label style="display:block;font-size:12.5px;font-weight:500;color:#4B5563;margin-bottom:6px">Single transaction limit</label><input value="₹15,000" style="width:100%;height:42px;border:1px solid #E5E7EB;border-radius:8px;padding:0 12px;font:400 13.5px Inter,sans-serif;outline:0" style-focus="border-color:#4F46E5"></div>
+              <div><label style="display:block;font-size:12.5px;font-weight:500;color:#4B5563;margin-bottom:6px">Daily limit</label><input value="₹30,000" style="width:100%;height:42px;border:1px solid #E5E7EB;border-radius:8px;padding:0 12px;font:400 13.5px Inter,sans-serif;outline:0" style-focus="border-color:#4F46E5"></div>
+              <div><label style="display:block;font-size:12.5px;font-weight:500;color:#4B5563;margin-bottom:6px">Monthly limit</label><input value="₹50,000" style="width:100%;height:42px;border:1px solid #E5E7EB;border-radius:8px;padding:0 12px;font:400 13.5px Inter,sans-serif;outline:0" style-focus="border-color:#4F46E5"></div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ step4 }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <sc-for list="{{ securityRules }}" as="r" hint-placeholder-count="5">
+                <button onClick="{{ r.toggle }}" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid #E5E7EB;background:#fff;border-radius:8px;cursor:pointer;text-align:left;font:400 13.5px Inter,sans-serif;color:#111827" style-hover="background:#FAFAFB">
+                  <span style="flex:1">{{ r.label }}</span>
+                  <span style="width:34px;height:19px;border-radius:999px;background:{{ r.track }};position:relative;display:block;flex:none"><span style="position:absolute;top:2px;left:{{ r.knob }};width:15px;height:15px;border-radius:50%;background:#fff"></span></span>
+                </button>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ step5 }}" hint-placeholder-val="{{ false }}">
+            <div style="border:1px solid #E5E7EB;border-radius:11px;overflow:hidden">
+              <sc-for list="{{ reviewRows }}" as="r" hint-placeholder-count="6">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #F3F4F6">
+                  <span style="font-size:13px;color:#6B7280">{{ r.label }}</span><span style="font-size:13px;font-weight:600">{{ r.value }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:16px 22px;border-top:1px solid #E5E7EB">
+          <button onClick="{{ prevStep }}" style="height:40px;padding:0 16px;border:1px solid #E5E7EB;background:#fff;border-radius:8px;font:500 13.5px Inter,sans-serif;color:#4B5563;cursor:pointer" style-hover="background:#F3F4F6">Back</button>
+          <button onClick="{{ nextStep }}" style="height:40px;padding:0 18px;border:0;background:#4F46E5;color:#fff;border-radius:8px;font:500 13.5px Inter,sans-serif;cursor:pointer" style-hover="background:#4338CA">{{ nextLabel }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- TOAST -->
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;right:24px;bottom:24px;z-index:90;display:flex;align-items:center;gap:10px;background:#111827;color:#fff;border-radius:10px;padding:12px 16px;box-shadow:0 10px 28px rgba(17,24,39,.25);animation:agtoast .22s ease both">
+      <span style="width:16px;height:16px;border-radius:50%;background:{{ toastColor }};display:flex;align-items:center;justify-content:center;flex:none">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>
+      </span>
+      <span style="font-size:13px;font-weight:500">{{ toast }}</span>
+    </div>
+  </sc-if>
+
+</div>
+</sc-if>]]>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;startSignedIn&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Demo&quot;},&quot;defaultPage&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;overview&quot;,&quot;agents&quot;,&quot;agentProfile&quot;,&quot;transactions&quot;,&quot;detail&quot;,&quot;approvals&quot;,&quot;policies&quot;,&quot;risk&quot;,&quot;audit&quot;,&quot;developers&quot;,&quot;settings&quot;],&quot;default&quot;:&quot;overview&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Demo&quot;}}">
+const IND='#4F46E5', TXT='#111827', MUT='#6B7280';
+const RISK={Low:{bg:'#DCFCE7',fg:'#15803D'},Medium:{bg:'#FEF3C7',fg:'#B45309'},High:{bg:'#FEE2E2',fg:'#B91C1C'}};
+const STAT={Approved:{bg:'#DCFCE7',fg:'#15803D'},Blocked:{bg:'#FEE2E2',fg:'#B91C1C'},Review:{bg:'#FEF3C7',fg:'#B45309'},'Approval Required':{bg:'#FEF3C7',fg:'#B45309'},Active:{bg:'#DCFCE7',fg:'#15803D'},Paused:{bg:'#F3F4F6',fg:'#6B7280'}};
+const AV=[{bg:'#EEF2FF',fg:'#4F46E5'},{bg:'#ECFDF5',fg:'#047857'},{bg:'#FEF3C7',fg:'#B45309'},{bg:'#F1F5F9',fg:'#334155'}];
+
+const TX=[
+ {id:'AGTX-40291',agent:'TravelAgent',merchant:'IndiGo',amount:'₹8,450',risk:'Low',status:'Approved',time:'14:03',ago:'2 sec ago',av:0},
+ {id:'AGTX-40290',agent:'ProcurementGPT',merchant:'XYZ Components',amount:'₹72,000',risk:'High',status:'Blocked',time:'13:31',ago:'21 sec ago',av:1},
+ {id:'AGTX-40289',agent:'MarketingAgent',merchant:'Meta Ads',amount:'₹14,500',risk:'Medium',status:'Review',time:'13:14',ago:'1 min ago',av:2},
+ {id:'AGTX-40288',agent:'SubscriptionBot',merchant:'Adobe',amount:'₹3,400',risk:'Low',status:'Approved',time:'12:58',ago:'6 min ago',av:3},
+ {id:'AGTX-40287',agent:'ShoppingAgent',merchant:'Amazon',amount:'₹6,120',risk:'Low',status:'Approved',time:'12:41',ago:'12 min ago',av:0},
+ {id:'AGTX-40286',agent:'ProcurementGPT',merchant:'AWS',amount:'₹28,900',risk:'Medium',status:'Approved',time:'12:20',ago:'26 min ago',av:1},
+ {id:'AGTX-40285',agent:'MarketingAgent',merchant:'Google Cloud',amount:'₹41,000',risk:'High',status:'Blocked',time:'11:52',ago:'48 min ago',av:2}
+];
+
+const DETAILS={
+ 'AGTX-40290':{
+  score:91,scoreLabel:'High risk',scoreNote:'Blocked automatically before payment was initiated.',
+  question:'Why was this transaction blocked?',policy:'Procurement Policy',category:'Industrial Components',
+  date:'01 Sep 2026 · 13:31:04 IST',payStatus:'Not initiated',payColor:'#6B7280',payId:'—',
+  intent:'ProcurementGPT requested this payment to purchase electronic components required for order #ORD-4932.',
+  justification:'"Supplier XYZ Components offered the required inventory with the fastest delivery time and available stock."',
+  signals:[
+   {level:'High Risk',title:'Transaction exceeds agent spending limit',detail:'Allowed ₹25,000 · Requested ₹72,000 — 2.9× over the per-transaction cap.'},
+   {level:'High Risk',title:'New merchant detected',detail:'This agent has never interacted with XYZ Components.'},
+   {level:'Medium Risk',title:'Unusual transaction amount',detail:"Transaction is 3.4× higher than the agent's normal purchase value."},
+   {level:'Passed',title:'Merchant category allowed',detail:'Industrial Components is an approved spending category.'}],
+  checks:[['Transaction Limit','Failed'],['Merchant Trust','Failed'],['Category Permission','Passed'],['Frequency Check','Passed'],['Behaviour Analysis','Failed']]},
+ 'AGTX-40291':{
+  score:12,scoreLabel:'Low risk',scoreNote:'Cleared autonomously in 380 ms.',
+  question:'Why was this transaction approved?',policy:'Travel Policy',category:'Flights',
+  date:'01 Sep 2026 · 14:03:21 IST',payStatus:'Payment successful',payColor:'#16A34A',payId:'pay_NxR91kd8Lm2Za',
+  intent:'TravelAgent requested this payment to book a Delhi → Bengaluru flight for the 12 Sep client visit.',
+  justification:'"Lowest-priced direct flight matching the requested departure window and refund policy."',
+  signals:[
+   {level:'Passed',title:'Within transaction limit',detail:'Allowed ₹15,000 · Requested ₹8,450.'},
+   {level:'Passed',title:'Known merchant',detail:'IndiGo has 34 prior settled transactions with this agent.'},
+   {level:'Passed',title:'Typical amount',detail:"Within 0.9× of the agent's average booking value."},
+   {level:'Passed',title:'Merchant category allowed',detail:'Flights is an approved spending category.'}],
+  checks:[['Transaction Limit','Passed'],['Merchant Trust','Passed'],['Category Permission','Passed'],['Frequency Check','Passed'],['Behaviour Analysis','Passed']]},
+ 'AGTX-40289':{
+  score:58,scoreLabel:'Needs human review',scoreNote:'Held for approval — no funds moved yet.',
+  question:'Why does this transaction need approval?',policy:'Marketing Policy',category:'Advertising',
+  date:'01 Sep 2026 · 13:14:47 IST',payStatus:'Awaiting approval',payColor:'#D97706',payId:'—',
+  intent:'MarketingAgent requested a budget top-up for the Q3 retargeting campaign on Meta Ads.',
+  justification:'"Campaign CPA dropped 22% this week; extending budget captures the remaining high-intent audience."',
+  signals:[
+   {level:'Medium Risk',title:'Approaching daily limit',detail:'This payment would use 84% of the ₹17,000 daily allowance.'},
+   {level:'Medium Risk',title:'Third top-up in 24 hours',detail:'Frequency is above the agent’s usual once-daily pattern.'},
+   {level:'Passed',title:'Known merchant',detail:'Meta Ads has 61 prior settled transactions.'},
+   {level:'Passed',title:'Merchant category allowed',detail:'Advertising is an approved spending category.'}],
+  checks:[['Transaction Limit','Passed'],['Merchant Trust','Passed'],['Category Permission','Passed'],['Frequency Check','Review'],['Behaviour Analysis','Passed']]}
+};
+
+const AGENTS=[
+ {name:'TravelAgent',id:'agt_travel_01',purpose:'Travel booking assistant',status:'Active',today:'₹8,450',monthly:'₹18,700',pct:'37%',risk:'Low',last:'2 sec ago',av:0},
+ {name:'ProcurementGPT',id:'agt_procure_04',purpose:'Procurement automation',status:'Active',today:'₹72,000',monthly:'₹92,300',pct:'92%',risk:'High',last:'21 sec ago',av:1},
+ {name:'MarketingAgent',id:'agt_mktg_02',purpose:'Ad campaign manager',status:'Active',today:'₹14,500',monthly:'₹32,400',pct:'64%',risk:'Medium',last:'1 min ago',av:2},
+ {name:'SubscriptionBot',id:'agt_subs_07',purpose:'Software subscription manager',status:'Paused',today:'₹0',monthly:'₹3,400',pct:'11%',risk:'Low',last:'3 hrs ago',av:3},
+ {name:'ShoppingAgent',id:'agt_shop_03',purpose:'Supplies reordering',status:'Active',today:'₹6,120',monthly:'₹21,050',pct:'42%',risk:'Low',last:'12 min ago',av:0}
+];
+
+const APPROVALS=[
+ {agent:'TravelAgent',merchant:'MakeMyTrip',amount:'₹18,700',purpose:'Flight booking',risk:'Medium',ago:'2 minutes ago',policy:'Travel Policy',av:0,tx:'AGTX-40289',
+  reason:'Transaction exceeds autonomous spending limit of ₹15,000.',
+  justification:'"Selected because it was the lowest-priced direct flight matching the requested schedule."'},
+ {agent:'MarketingAgent',merchant:'Meta Ads',amount:'₹14,500',purpose:'Campaign top-up',risk:'Medium',ago:'6 minutes ago',policy:'Marketing Policy',av:2,tx:'AGTX-40289',
+  reason:'Third budget top-up within 24 hours — frequency rule triggered.',
+  justification:'"Campaign CPA improved 22%; additional budget captures remaining high-intent audience today."'},
+ {agent:'ProcurementGPT',merchant:'Global Metals Co.',amount:'₹46,200',purpose:'Raw material order',risk:'High',ago:'14 minutes ago',policy:'Procurement Policy',av:1,tx:'AGTX-40290',
+  reason:'Unknown merchant with no transaction history for this workspace.',
+  justification:'"Only supplier with stock available before the 04 Sep production run."'}
+];
+
+const POLICIES=[
+ {name:'Travel Policy',desc:'Flights, hotels and ground transport for approved trips.',agents:'2',txnLimit:'₹15,000',monthly:'₹50,000',approval:'Above limit',status:'Active'},
+ {name:'Procurement Policy',desc:'Supplier payments with merchant allowlist enforcement.',agents:'3',txnLimit:'₹25,000',monthly:'₹1,00,000',approval:'New merchant',status:'Active'},
+ {name:'Marketing Policy',desc:'Ad platform spend with daily frequency guardrails.',agents:'2',txnLimit:'₹20,000',monthly:'₹80,000',approval:'Above limit',status:'Active'},
+ {name:'Subscription Policy',desc:'Recurring SaaS renewals under a fixed monthly cap.',agents:'1',txnLimit:'₹10,000',monthly:'₹25,000',approval:'Recurring',status:'Draft'}
+];
+
+const AUDIT=[
+ ['14:03:21','TravelAgent initiated transaction ₹8,450','AGTX-40291 · merchant IndiGo','#4F46E5'],
+ ['14:03:21','Policy "Travel Policy" evaluated','5 of 5 checks passed','#4F46E5'],
+ ['14:03:22','Merchant verification completed','IndiGo · 34 prior settled payments','#4F46E5'],
+ ['14:03:22','Risk score calculated','Score: 12 — low risk band','#16A34A'],
+ ['14:03:22','Transaction approved','Autonomous decision, no human required','#16A34A'],
+ ['14:03:23','Payment initiated through Razorpay','pay_NxR91kd8Lm2Za','#0C2451'],
+ ['14:03:24','Payment successful','₹8,450 settled · 380 ms end to end','#16A34A'],
+ ['13:31:04','ProcurementGPT transaction blocked','AGTX-40290 · risk score 91','#DC2626']
+];
+
+const CATS=['Flights','Hotels','Transportation','Food & Dining','Software','Advertising','Electronics','Cryptocurrency'];
+const SECRULES=['Require approval for unknown merchants','Require approval above spending limit','Require approval for international transactions','Block cryptocurrency transactions','Block repeated failed attempts'];
+const TYPES=['Travel','Shopping','Procurement','Marketing','Subscription','Custom'];
+const STEPS=['Agent Details','Permissions','Spending Limits','Security Rules','Review'];
+const SERIES={d7:[24,31,27,38,34,46,42],d30:[18,26,22,34,29,44,52],d90:[12,22,31,26,40,36,49]};
+const LABELS={d7:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],d30:['W1','W2','W3','W4','W5','W6','W7'],d90:['Jun','Jul','Jul','Aug','Aug','Aug','Sep']};
+
+class Component extends DCLogic {
+  state={screen:this.props.startSignedIn===false?'login':(this.props.startSignedIn?'app':'login'),
+    ws:{name:'Nexora Retail',email:'ops@nexora.in',initials:'NV'},userMenu:false,signingIn:false,
+    page:this.props.defaultPage||'overview',txId:'AGTX-40290',range:'d7',agentTab:'Overview',txTab:'All',
+    policyOpen:false,policyGenerated:false,generating:false,agentModalOpen:false,step:0,
+    types:['Travel'],cats:['Flights','Hotels','Transportation'],rules:[0,1,2,3],pipe:5,toast:'',toastColor:'#16A34A',
+    approvals:APPROVALS.map(a=>a)};
+
+  say(msg,color){ clearTimeout(this._t); this.setState({toast:msg,toastColor:color||'#16A34A'});
+    this._t=setTimeout(()=>this.setState({toast:''}),2600); }
+  componentWillUnmount(){ clearTimeout(this._t); clearInterval(this._p); }
+  go=p=>()=>this.setState({page:p});
+  openTx=id=>()=>{ this.setState({page:'detail',txId:id}); this.runPipe(); };
+  runPipe(){ clearInterval(this._p); this.setState({pipe:0});
+    this._p=setInterval(()=>this.setState(s=>{ if(s.pipe>=5){clearInterval(this._p); return null;} return {pipe:s.pipe+1}; }),260); }
+
+  renderVals(){
+    const s=this.state, page=s.page;
+    const navOn=id=>({bg:page===id?'#EEF2FF':'transparent',fg:page===id?IND:'#4B5563'});
+    const titles={overview:'Overview',agents:'AI Agents',agentProfile:'Agent Profile',transactions:'Transactions',detail:'Transaction Analysis',approvals:'Approval Center',policies:'Policies',risk:'Risk Center',audit:'Audit Logs',developers:'Developers',settings:'Settings'};
+
+    const pts=SERIES[s.range], w=620, h=176, max=60;
+    const xy=pts.map((v,i)=>[i*(w/(pts.length-1)),h-(v/max)*(h-24)]);
+    const line='M'+xy.map(p=>p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' L ');
+    const area=line+' L '+w+' '+h+' L 0 '+h+' Z';
+    const rangeStyle=k=>({bg:s.range===k?'#fff':'transparent',fg:s.range===k?TXT:MUT});
+
+    const d=DETAILS[s.txId]||DETAILS['AGTX-40290'];
+    const tx=TX.find(t=>t.id===s.txId)||TX[1];
+    const sc=d.score, scoreColor=sc>=70?'#DC2626':sc>=40?'#D97706':'#16A34A';
+    const C=2*Math.PI*16.5;
+    const sigColor=l=>l==='High Risk'?'#DC2626':l==='Medium Risk'?'#D97706':'#16A34A';
+    const sigBg=l=>l==='High Risk'?'#FEE2E2':l==='Medium Risk'?'#FEF3C7':'#DCFCE7';
+    const resColor=r=>r==='Failed'?'#DC2626':r==='Review'?'#D97706':'#16A34A';
+
+    const pipeLabels=['Agent Request','Intent Analysis','Policy Check','Risk Analysis','Payment Decision'];
+    const pipeline=pipeLabels.map((label,i)=>{ const done=i<s.pipe;
+      return {label,sep:i<4?'→':'',dot:done?(i===4?scoreColor:'#16A34A'):'#D1D5DB',
+        border:done?'#E5E7EB':'#F3F4F6',bg:done?'#fff':'#FAFAFB',fg:done?TXT:'#9CA3AF'}; });
+
+    const visibleTx=TX.filter(t=>s.txTab==='All'||(s.txTab==='Pending Review'?t.status==='Review':t.status===s.txTab))
+      .map(t=>({...t,riskBg:RISK[t.risk].bg,riskFg:RISK[t.risk].fg,statusBg:STAT[t.status].bg,statusFg:STAT[t.status].fg,open:this.openTx(t.id)}));
+
+    const txTabs=['All','Approved','Blocked','Pending Review'].map(l=>({label:l,
+      count:l==='All'?TX.length:TX.filter(t=>l==='Pending Review'?t.status==='Review':t.status===l).length,
+      fg:s.txTab===l?IND:MUT,bar:s.txTab===l?IND:'transparent',select:()=>this.setState({txTab:l})}));
+
+    const agentTabs=['Overview','Transactions','Permissions','Policies','Logs'].map(l=>({label:l,
+      fg:s.agentTab===l?IND:MUT,bar:s.agentTab===l?IND:'transparent',select:()=>this.setState({agentTab:l})}));
+
+    const initials=n=>n.replace(/[^A-Za-z]/g,'').slice(0,2).toUpperCase();
+
+    const WS=[{name:'Nexora Retail',email:'ops@nexora.in',initials:'NV',meta:'12 agents · 248 transactions today',env:'Live',bg:'#EEF2FF',fg:IND,envBg:'#DCFCE7',envFg:'#15803D'},
+      {name:'Nexora Labs',email:'ops@nexora.in',initials:'NL',meta:'3 agents · sandbox keys only',env:'Test',bg:'#F1F5F9',fg:'#334155',envBg:'#F3F4F6',envFg:MUT}];
+
+    return {
+      isAuth:s.screen!=='app',isApp:s.screen==='app',
+      isLogin:s.screen==='login',isVerify:s.screen==='verify',isWorkspace:s.screen==='workspace',
+      loginLabel:s.signingIn?'Signing in…':'Sign in',
+      submitLogin:()=>{ this.setState({signingIn:true});
+        setTimeout(()=>this.setState({signingIn:false,screen:'verify'}),700); },
+      submitVerify:()=>this.setState({screen:'workspace'}),
+      backToLogin:()=>this.setState({screen:'login'}),
+      codeCells:['4','8','2','9','1','6'].map(v=>({value:v,border:'#E5E7EB'})),
+      workspaces:WS.map(w=>({...w,enter:()=>{this.setState({screen:'app',ws:w,page:'overview',userMenu:false});this.say('Signed in to '+w.name);}})),
+      wsName:s.ws.name,wsEmail:s.ws.email,wsInitials:s.ws.initials,
+      userMenu:s.userMenu,
+      toggleUserMenu:()=>this.setState(st=>({userMenu:!st.userMenu})),
+      switchWorkspace:()=>this.setState({screen:'workspace',userMenu:false}),
+      signOut:()=>this.setState({screen:'login',userMenu:false,page:'overview'}),
+
+      pageTitle:titles[page]||'AgentGuard',
+      nav:{overview:navOn('overview'),agents:navOn(page==='agentProfile'?'agentProfile':'agents'),transactions:navOn(page==='detail'?'detail':'transactions'),policies:navOn('policies'),approvals:navOn('approvals'),risk:navOn('risk'),audit:navOn('audit'),developers:navOn('developers'),settings:navOn('settings')},
+      isOverview:page==='overview',isAgents:page==='agents',isAgentProfile:page==='agentProfile',isTransactions:page==='transactions',
+      isDetail:page==='detail',isApprovals:page==='approvals',isPolicies:page==='policies',isRisk:page==='risk',isAudit:page==='audit',
+      isDevelopers:page==='developers',isSettings:page==='settings',
+      goOverview:this.go('overview'),goAgents:this.go('agents'),goTransactions:this.go('transactions'),goPolicies:this.go('policies'),
+      goApprovals:this.go('approvals'),goRisk:this.go('risk'),goAudit:this.go('audit'),goDevelopers:this.go('developers'),goSettings:this.go('settings'),
+
+      chart:{line,area,lastX:xy[xy.length-1][0],lastY:xy[xy.length-1][1],labels:LABELS[s.range]},
+      range:{d7:rangeStyle('d7'),d30:rangeStyle('d30'),d90:rangeStyle('d90')},
+      setRange7:()=>this.setState({range:'d7'}),setRange30:()=>this.setState({range:'d30'}),setRange90:()=>this.setState({range:'d90'}),
+
+      activity:TX.slice(0,5).map(t=>({id:t.id,agent:t.agent,merchant:t.merchant,amount:t.amount,time:t.ago,
+        initials:initials(t.agent),avatarBg:AV[t.av].bg,avatarFg:AV[t.av].fg,
+        riskLabel:'Risk: '+t.risk,riskBg:RISK[t.risk].bg,riskFg:RISK[t.risk].fg,
+        status:t.status==='Review'?'Approval Required':t.status,
+        statusBg:STAT[t.status].bg,statusFg:STAT[t.status].fg,open:this.openTx(t.id)})),
+
+      agents:AGENTS.map(a=>({...a,initials:initials(a.name),avatarBg:AV[a.av].bg,avatarFg:AV[a.av].fg,
+        statusBg:STAT[a.status].bg,statusFg:STAT[a.status].fg,riskBg:RISK[a.risk].bg,riskFg:RISK[a.risk].fg,
+        barColor:a.risk==='High'?'#DC2626':a.risk==='Medium'?'#D97706':'#4F46E5',
+        open:()=>this.setState({page:'agentProfile',agentTab:'Overview'})})),
+
+      agentTabs,agentTab:s.agentTab,agentTabOverview:s.agentTab==='Overview',agentTabOther:s.agentTab!=='Overview',
+      allowed:['Flights','Hotels','Transportation','Food'],
+      restricted:['Electronics','Cryptocurrency','Gift Cards','Unknown Categories'],
+      controls:[{label:'Maximum single transaction',value:'₹15,000',color:TXT},{label:'Daily spending limit',value:'₹30,000',color:TXT},
+        {label:'Monthly spending limit',value:'₹50,000',color:TXT},{label:'International payments',value:'Disabled',color:'#DC2626'},
+        {label:'Recurring payments',value:'Approval Required',color:'#D97706'}],
+      agentRecent:[{text:'₹8,450 → IndiGo approved',time:'2 sec ago',color:'#16A34A'},
+        {text:'₹18,700 → MakeMyTrip sent for approval',time:'2 min ago',color:'#D97706'},
+        {text:'₹2,300 → Uber approved',time:'1 hr ago',color:'#16A34A'},
+        {text:'₹9,900 → Unknown merchant blocked',time:'4 hrs ago',color:'#DC2626'}],
+      pauseAgent:()=>this.say('TravelAgent paused','#D97706'),editAgent:()=>this.say('Agent settings opened'),
+
+      txTabs,visibleTx,
+
+      detail:{id:s.txId,amount:tx.amount,agent:tx.agent,merchant:tx.merchant,
+        statusUpper:tx.status==='Review'?'NEEDS APPROVAL':tx.status.toUpperCase(),
+        statusBg:STAT[tx.status].bg,statusFg:STAT[tx.status].fg,
+        score:sc,scoreColor,scoreLabel:d.scoreLabel,scoreNote:d.scoreNote,
+        scoreDash:((sc/100)*C).toFixed(1)+' '+C.toFixed(1),
+        question:d.question,policy:d.policy,category:d.category,date:d.date,
+        intent:d.intent,justification:d.justification,payStatus:d.payStatus,payColor:d.payColor,payId:d.payId,
+        signals:d.signals.map(x=>({...x,color:sigColor(x.level),bg:sigBg(x.level)})),
+        checks:d.checks.map(c=>({label:c[0],result:c[1],color:resColor(c[1])}))},
+      pipeline,replay:()=>this.runPipe(),
+      approveOnce:()=>this.say('Transaction approved once'),
+      rejectTx:()=>this.say('Transaction rejected','#DC2626'),
+      allowlist:()=>this.say('Merchant added to allowlist'),
+
+      approvals:s.approvals.map((a,i)=>({...a,initials:initials(a.agent),avatarBg:AV[a.av].bg,avatarFg:AV[a.av].fg,
+        riskBg:RISK[a.risk].bg,riskFg:RISK[a.risk].fg,
+        view:this.openTx(a.tx),
+        approve:()=>{this.setState(st=>({approvals:st.approvals.filter((_,j)=>j!==i)}));this.say('Payment approved · '+a.amount+' to '+a.merchant);},
+        reject:()=>{this.setState(st=>({approvals:st.approvals.filter((_,j)=>j!==i)}));this.say('Payment rejected','#DC2626');}})),
+      approvalsEmpty:s.approvals.length===0,
+
+      policies:POLICIES.map(p=>({...p,statusBg:STAT[p.status==='Active'?'Active':'Paused'].bg,statusFg:STAT[p.status==='Active'?'Active':'Paused'].fg})),
+      policyOpen:s.policyOpen,policyGenerated:s.policyGenerated,
+      openPolicy:()=>this.setState({policyOpen:true,policyGenerated:false}),
+      closePolicy:()=>this.setState({policyOpen:false}),
+      stop:e=>e.stopPropagation(),
+      generateLabel:s.generating?'Generating…':'Generate Policy',
+      generateHint:s.policyGenerated?'Rules generated from your description.':'AgentGuard converts plain language into enforceable rules.',
+      generatePolicy:()=>{ this.setState({generating:true,policyGenerated:false});
+        setTimeout(()=>this.setState({generating:false,policyGenerated:true}),900); },
+      generatedRules:[{label:'Agent',value:'TravelAgent',color:TXT},{label:'Allowed Categories',value:'Flights, Hotels',color:TXT},
+        {label:'Transaction Limit',value:'₹15,000',color:TXT},{label:'Monthly Limit',value:'₹50,000',color:TXT},
+        {label:'Above Limit',value:'Human Approval',color:'#D97706'},{label:'Unknown Merchant',value:'Block',color:'#DC2626'},
+        {label:'International Payments',value:'Approval Required',color:'#D97706'}],
+      savePolicy:()=>{this.setState({policyOpen:false});this.say('Policy saved and enforcing');},
+
+      agentModalOpen:s.agentModalOpen,step1:s.step===0,step2:s.step===1,step3:s.step===2,step4:s.step===3,step5:s.step===4,
+      openAddAgent:()=>this.setState({agentModalOpen:true,step:0}),
+      closeAddAgent:()=>this.setState({agentModalOpen:false}),
+      steps:STEPS.map((label,i)=>({label,bar:i<=s.step?IND:'#E5E7EB',fg:i<=s.step?TXT:'#9CA3AF'})),
+      nextLabel:s.step===4?'Create Agent':'Continue',
+      nextStep:()=>{ if(s.step===4){ this.setState({agentModalOpen:false,step:0}); this.say('Agent created successfully'); }
+        else this.setState({step:s.step+1}); },
+      prevStep:()=>this.setState({step:Math.max(0,s.step-1)}),
+      agentTypes:TYPES.map(label=>{ const on=s.types.includes(label);
+        return {label,border:on?IND:'#E5E7EB',bg:on?'#EEF2FF':'#fff',fg:on?IND:'#4B5563',select:()=>this.setState({types:[label]})}; }),
+      categories:CATS.map(label=>{ const on=s.cats.includes(label);
+        return {label,border:on?'#C7D2FE':'#E5E7EB',bg:on?'#F5F6FF':'#fff',box:on?IND:'#fff',boxBorder:on?IND:'#D1D5DB',
+          toggle:()=>this.setState(st=>({cats:st.cats.includes(label)?st.cats.filter(c=>c!==label):st.cats.concat(label)}))}; }),
+      securityRules:SECRULES.map((label,i)=>{ const on=s.rules.includes(i);
+        return {label,track:on?IND:'#E5E7EB',knob:on?'17px':'2px',
+          toggle:()=>this.setState(st=>({rules:st.rules.includes(i)?st.rules.filter(r=>r!==i):st.rules.concat(i)}))}; }),
+      reviewRows:[{label:'Agent name',value:'TravelAgent-02'},{label:'Type',value:s.types[0]||'Travel'},
+        {label:'Allowed categories',value:s.cats.length+' selected'},{label:'Single transaction limit',value:'₹15,000'},
+        {label:'Daily limit',value:'₹30,000'},{label:'Monthly limit',value:'₹50,000'},
+        {label:'Security rules',value:s.rules.length+' of 5 enabled'}],
+
+      riskStats:[{label:'Suspicious Merchants',value:'4',delta:'+1',deltaColor:'#DC2626'},
+        {label:'Limit Violations',value:'7',delta:'+3',deltaColor:'#DC2626'},
+        {label:'Unusual Spending',value:'3',delta:'−2',deltaColor:'#16A34A'},
+        {label:'Repeated Attempts',value:'2',delta:'0',deltaColor:MUT}],
+      riskBars:[[6,10,62],[4,14,58],[9,8,64],[3,12,70],[11,16,52],[5,9,66],[7,13,60],[2,7,74],[10,18,48],[6,11,63],[8,15,55],[4,9,68],[12,17,50],[5,10,65]]
+        .map(b=>({high:b[0]+'%',med:b[1]+'%',low:b[2]+'%'})),
+      riskCats:[{label:'Limit violations',value:'38%',pct:'38%'},{label:'Unknown merchants',value:'27%',pct:'27%'},
+        {label:'Behaviour anomalies',value:'21%',pct:'21%'},{label:'Restricted categories',value:'14%',pct:'14%'}],
+
+      audit:AUDIT.map(a=>({time:a[0],title:a[1],meta:a[2],color:a[3]})),
+      copyKey:()=>this.say('API key copied to clipboard'),
+      generateKey:()=>this.say('New test key generated'),
+      revokeKey:()=>this.say('Production key revoked','#DC2626'),
+
+      toast:s.toast,toastColor:s.toastColor
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+import { useEffect, useRef } from 'react'
+import { Search, Bell } from './Icons'
+
+export default function Topbar({ title, menuOpen, onToggleMenu, onCloseMenu, onNavigate, onSwitchWorkspace, onSignOut }) {
+  const ref = useRef(null)
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const onDocClick = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) onCloseMenu()
+    }
+    document.addEventListener('mousedown', onDocClick)
+    return () => document.removeEventListener('mousedown', onDocClick)
+  }, [menuOpen, onCloseMenu])
+
+  return (
+    <header className="ag-topbar">
+      <span style={{ fontSize: 14.5, fontWeight: 600 }}>{title}</span>
+
+      <div className="ag-search" style={{ marginLeft: 12, background: '#F7F8FA', height: 36, width: 300 }}>
+        <Search />
+        <input placeholder="Search agents, transactions, merchants" />
+      </div>
+
+      <div style={{ flex: 1 }} />
+
+      <div className="ag-live">
+        <span className="ag-pulse" style={{ width: 6, height: 6, borderRadius: '50%', background: '#16A34A' }} />
+        Live monitoring
+      </div>
+
+      <button className="ag-btn-icon">
+        <Bell />
+        <span
+          style={{ position: 'absolute', top: 7, right: 8, width: 6, height: 6, borderRadius: '50%', background: '#DC2626' }}
+        />
+      </button>
+
+      <div style={{ position: 'relative' }} ref={ref}>
+        <div
+          onClick={onToggleMenu}
+          className="ag-avatar"
+          style={{
+            width: 34, height: 34, borderRadius: 999, background: '#4F46E5',
+            color: '#fff', fontSize: 12.5, cursor: 'pointer',
+          }}
+        >
+          RS
+        </div>
+        {menuOpen && (
+          <div className="ag-menu ag-rise-fast">
+            <div style={{ padding: '10px 10px 12px', borderBottom: '1px solid #F3F4F6', marginBottom: 6 }}>
+              <div style={{ fontSize: 13, fontWeight: 600 }}>Riya Sharma</div>
+              <div style={{ fontSize: 12, color: '#6B7280' }}>ops@nexora.in · Admin</div>
+            </div>
+            <button className="ag-menu-item" onClick={() => onNavigate('settings')}>Workspace settings</button>
+            <button className="ag-menu-item" onClick={onSwitchWorkspace}>Switch workspace</button>
+            <button className="ag-menu-item is-danger" onClick={onSignOut}>Sign out</button>
+          </div>
+        )}
+      </div>
+    </header>
+  )
+}
