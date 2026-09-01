@@ -8,8 +8,8 @@ export default function Approvals({ approvals, onApprove, onReject, onView }) {
       <p className="ag-sub">Review payments that require human authorisation.</p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        {approvals.map((a, i) => (
-          <div key={a.agent + a.merchant} className="ag-card" style={{ padding: '20px 22px' }}>
+        {approvals.map((approval, i) => { const tx = approval.transaction || {}; const a = { ...approval, agent: tx.agent_name || tx.agent_id, merchant: tx.merchant?.name, amount: new Intl.NumberFormat('en-IN', { style: 'currency', currency: tx.amount?.currency || 'INR', maximumFractionDigits: 0 }).format((tx.amount?.minor || 0) / 100), purpose: tx.purpose, risk: (tx.risk?.band || 'medium').replace(/^./, x => x.toUpperCase()), ago: new Date(approval.requested_at).toLocaleString(), policy: tx.policy_evaluation?.policy_id, av: i % 4, tx: approval.transaction_id, reason: approval.reason_codes?.join(', '), justification: tx.intent?.justification || 'No justification provided.' }; return (
+          <div key={approval.approval_id} className="ag-card" style={{ padding: '20px 22px' }}>
             <div
               style={{
                 display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
@@ -56,15 +56,15 @@ export default function Approvals({ approvals, onApprove, onReject, onView }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
               <button className="ag-btn" style={{ color: '#4B5563' }} onClick={() => onView(a.tx)}>View analysis</button>
               <div style={{ flex: 1 }} />
-              <button className="ag-btn ag-btn-danger" style={{ padding: '0 16px' }} onClick={() => onReject(i, a)}>
+              {approval.allowed_actions?.includes('reject') && <button className="ag-btn ag-btn-danger" style={{ padding: '0 16px' }} onClick={() => onReject(i, a)}>
                 Reject
-              </button>
-              <button className="ag-btn ag-btn-primary" style={{ padding: '0 16px' }} onClick={() => onApprove(i, a)}>
+              </button>}
+              {approval.allowed_actions?.includes('approve') && <button className="ag-btn ag-btn-primary" style={{ padding: '0 16px' }} onClick={() => onApprove(i, a)}>
                 Approve Payment
-              </button>
+              </button>}
             </div>
           </div>
-        ))}
+        )})}
       </div>
 
       {approvals.length === 0 && (

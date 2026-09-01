@@ -1,3 +1,6 @@
+import { useEffect, useState } from 'react'
+import { api } from '../api/client'
+
 const REQUEST = `const decision = await agentguard.authorize({
   agent_id: "travel_agent",
   amount:   8450,
@@ -20,6 +23,12 @@ const preBase = {
 }
 
 export default function Developers({ onToast }) {
+  const [keys, setKeys] = useState([])
+  const [newSecret, setNewSecret] = useState('')
+  const load = () => api.keys().then((r) => setKeys(r.items)).catch((e) => onToast(e.message, '#DC2626'))
+  useEffect(load, [])
+  const create = async () => { try { const key = await api.createKey(); setNewSecret(key.secret); await load(); onToast('New test key generated — copy it now') } catch (e) { onToast(e.message, '#DC2626') } }
+  const revoke = async (id) => { try { await api.revokeKey(id); await load(); onToast('API key revoked', '#DC2626') } catch (e) { onToast(e.message, '#DC2626') } }
   return (
     <div className="ag-rise" style={{ maxWidth: 900 }}>
       <h1 className="ag-h1">Developers</h1>
@@ -28,27 +37,19 @@ export default function Developers({ onToast }) {
       <div className="ag-card ag-card-pad" style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
           <h2 className="ag-h2">API Keys</h2>
-          <button className="ag-btn ag-btn-sm" onClick={() => onToast('New test key generated')}>Generate Key</button>
+          <button className="ag-btn ag-btn-sm" onClick={create}>Generate Key</button>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderTop: '1px solid #F3F4F6' }}>
+        {newSecret && <div style={{ padding: 12, background: '#FEF3C7', borderRadius: 8 }}><strong>Copy now — shown once:</strong> <span className="ag-mono">{newSecret}</span></div>}
+        {keys.map((key) => <div key={key.key_id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderTop: '1px solid #F3F4F6' }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13.5, fontWeight: 500, marginBottom: 3 }}>Test API Key</div>
-            <span className="ag-mono" style={{ fontSize: 12.5, color: '#6B7280' }}>ag_test_7f3ba91c4de20a</span>
+            <div style={{ fontSize: 13.5, fontWeight: 500, marginBottom: 3 }}>{key.name}</div>
+            <span className="ag-mono" style={{ fontSize: 12.5, color: '#6B7280' }}>{key.prefix}••••••••</span>
           </div>
-          <button className="ag-btn ag-btn-xs" onClick={() => onToast('API key copied to clipboard')}>Copy</button>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderTop: '1px solid #F3F4F6' }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13.5, fontWeight: 500, marginBottom: 3 }}>Production Key</div>
-            <span className="ag-mono" style={{ fontSize: 12.5, color: '#6B7280' }}>ag_live_••••••••••••••</span>
-          </div>
-          <button className="ag-btn ag-btn-xs" onClick={() => onToast('API key copied to clipboard')}>Reveal</button>
-          <button className="ag-btn ag-btn-xs ag-btn-danger" onClick={() => onToast('Production key revoked', '#DC2626')}>
+          {!key.revoked_at && <button className="ag-btn ag-btn-xs ag-btn-danger" onClick={() => revoke(key.key_id)}>
             Revoke
-          </button>
-        </div>
+          </button>}
+        </div>)}
       </div>
 
       <div className="ag-card ag-card-pad">

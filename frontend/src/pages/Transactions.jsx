@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { TX, RISK, STAT } from '../data'
+import { RISK, STAT } from '../data'
 import { Search } from '../components/Icons'
 
 const COLS = '140px 1.2fr 1.4fr 110px 100px 130px 70px'
@@ -9,9 +9,12 @@ const FILTERS = ['Today ▾', 'Risk: All ▾', 'Agent: All ▾', 'Status: All �
 const matches = (t, tab) =>
   tab === 'All' || (tab === 'Pending Review' ? t.status === 'Review' : t.status === tab)
 
-export default function Transactions({ onOpenTx }) {
+const mapTx = (t) => ({ id: t.transaction_id, agent: t.agent_name || t.agent_id, merchant: t.merchant?.name, amount: new Intl.NumberFormat('en-IN', { style: 'currency', currency: t.amount?.currency || 'INR', maximumFractionDigits: 0 }).format((t.amount?.minor || 0) / 100), risk: (t.risk?.band || 'low').replace(/^./, x => x.toUpperCase()), status: t.decision === 'review' ? 'Review' : (t.decision || '').replace(/^./, x => x.toUpperCase()), time: t.created_at ? new Date(t.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—' })
+export default function Transactions({ transactions = [], onSearch, onOpenTx }) {
   const [tab, setTab] = useState('All')
-  const visible = TX.filter((t) => matches(t, tab))
+  const [query, setQuery] = useState('')
+  const rows = transactions.map(mapTx)
+  const visible = rows.filter((t) => matches(t, tab))
 
   return (
     <div className="ag-rise">
@@ -27,7 +30,7 @@ export default function Transactions({ onOpenTx }) {
           >
             {label}
             <span style={{ marginLeft: 7, fontSize: 11.5, color: '#9CA3AF' }}>
-              {TX.filter((t) => matches(t, label)).length}
+              {rows.filter((t) => matches(t, label)).length}
             </span>
           </button>
         ))}
@@ -36,7 +39,7 @@ export default function Transactions({ onOpenTx }) {
       <div style={{ display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap' }}>
         <div className="ag-search" style={{ flex: 1, minWidth: 240 }}>
           <Search />
-          <input placeholder="Search transaction ID, merchant or agent" />
+          <input placeholder="Search transaction ID, merchant or agent" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') onSearch({ q: query }) }} />
         </div>
         {FILTERS.map((f) => (
           <button key={f} className="ag-btn-filter">{f}</button>

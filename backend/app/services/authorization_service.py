@@ -15,7 +15,7 @@ async def _history(workspace_id, agent_id, req):
     category = req["merchant"]["category"]
     since = now() - timedelta(days=30)
     merchant_known = await db.transactions.find_one({"workspace_id": workspace_id, "merchant.name": {"$regex": f"^{merchant}$", "$options": "i"}, "payment.status": "succeeded"}) is not None
-    category_known = await db.transactions.find_one({"workspace_id": workspace_id, "agent_id": agent_id, "merchant.category": category, "decision": "approved"}) is not None
+    category_known = await db.transactions.find_one({"workspace_id": workspace_id, "agent_id": agent_id, "merchant.category": category}) is not None
     recent_failures = await db.transactions.count_documents({"workspace_id": workspace_id, "agent_id": agent_id, "decision": "blocked", "created_at": {"$gte": since}})
     attempts = await db.transactions.count_documents({"workspace_id": workspace_id, "agent_id": agent_id, "merchant.name": merchant, "created_at": {"$gte": now() - timedelta(hours=1)}})
     return {"merchant_known": merchant_known, "category_known": category_known, "recent_failures": recent_failures, "same_merchant_attempts": attempts, "normal_pattern": merchant_known and req["amount"] < 1_000_000}

@@ -23,6 +23,16 @@ async def seed():
         old=await db.agent_credentials.find_one({"workspace_id":WS,"agent_id":aid,"revoked_at":None})
         if not old:
             raw,prefix,hashed=secret("agc");await db.agent_credentials.insert_one({"credential_id":f"cred_{aid}","workspace_id":WS,"agent_id":aid,"prefix":prefix,"secret_hash":hashed,"environment":"test","created_at":t,"last_used_at":None,"revoked_at":None});credentials.append((aid,raw))
+    samples=[
+        ("AGTX-DEMO-APPROVED","agt_travel_01",845000,"IndiGo","airline","IN","approved","approved",12,"low","succeeded","pol_travel"),
+        ("AGTX-DEMO-REVIEW","agt_procure_04",3400000,"New International Supplier","industrial components","SG","review","review_pending",45,"medium","not_initiated","pol_procurement"),
+        ("AGTX-DEMO-BLOCKED","agt_invest_01",8000000,"Demo Crypto Exchange","cryptocurrency","IN","blocked","blocked",75,"high","not_initiated","pol_investment"),
+    ]
+    for txid,aid,amount,merchant,category,country,decision,state,score,band,payment,pid in samples:
+        policy=next(p for p in POLICIES if p[0]==pid)
+        doc={"transaction_id":txid,"workspace_id":WS,"agent_id":aid,"amount":{"minor":amount,"currency":"INR"},"merchant":{"name":merchant,"category":category,"country":country},"purpose":"Seeded demo scenario","intent":{"description":"Reproducible demo authorization","justification":"Seed data"},"policy_evaluation":{"policy_id":pid,"policy_version":1,"policy_snapshot":policy[2],"checks":[]},"risk":{"score":score,"band":band,"version":"risk-v1","signals":[]},"decision":decision,"decision_state":state,"reason_codes":["CATEGORY_BLOCKED"] if decision=="blocked" else ["UNKNOWN_INTERNATIONAL_MERCHANT"] if decision=="review" else ["WITHIN_LIMIT","KNOWN_MERCHANT","CATEGORY_ALLOWED"],"payment":{"provider":"razorpay","status":payment},"idempotency_key":f"seed-{decision}","allowed_actions":["view"],"request_id":"req_seed","trace":[],"total_decision_latency_ms":0,"created_at":t-timedelta(days=1),"updated_at":t-timedelta(days=1)}
+        await db.transactions.update_one({"workspace_id":WS,"transaction_id":txid},{"$set":doc},upsert=True)
+    await db.approvals.update_one({"transaction_id":"AGTX-DEMO-REVIEW"},{"$set":{"approval_id":"apr_demo_review","transaction_id":"AGTX-DEMO-REVIEW","workspace_id":WS,"status":"pending","reason_codes":["UNKNOWN_INTERNATIONAL_MERCHANT"],"requested_at":t,"expires_at":t+timedelta(hours=24),"decided_by":None,"decided_at":None,"comment":None,"version":1,"created_at":t}},upsert=True)
     print("Seed complete. Login: admin@agentguard.local / AgentGuard123!")
     for aid,raw in credentials:print(f"{aid} credential (shown once): {raw}")
     await client.close()

@@ -3,12 +3,12 @@ let token = localStorage.getItem('ag_token') || ''
 let workspaceId = localStorage.getItem('ag_workspace') || ''
 
 export function setSession(nextToken, nextWorkspace) {
-  if (nextToken !== undefined) { token = nextToken || ''; token ? localStorage.setItem('ag_token', token) : localStorage.removeItem('ag_token') }
-  if (nextWorkspace !== undefined) { workspaceId = nextWorkspace || ''; workspaceId ? localStorage.setItem('ag_workspace', workspaceId) : localStorage.removeItem('ag_workspace') }
+  if (nextToken !== undefined) { token = nextToken || ''; if (token) localStorage.setItem('ag_token', token); else localStorage.removeItem('ag_token') }
+  if (nextWorkspace !== undefined) { workspaceId = nextWorkspace || ''; if (workspaceId) localStorage.setItem('ag_workspace', workspaceId); else localStorage.removeItem('ag_workspace') }
 }
 
 export async function request(path, options = {}) {
-  const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) }
+  const headers = { 'Content-Type': 'application/json', ...options.headers }
   if (token) headers.Authorization = `Bearer ${token}`
   if (workspaceId) headers['X-Workspace-ID'] = workspaceId
   const response = await fetch(`${BASE}${path}`, { ...options, headers })
@@ -33,9 +33,10 @@ export const api = {
   approvals: () => request('/v1/approvals?status=pending'),
   decide: (id, decision, version, comment = '') => request(`/v1/approvals/${id}/decision`, { method: 'POST', body: JSON.stringify({ decision, version, comment }) }),
   dashboard: (range = '7d') => request(`/v1/dashboard/overview?range=${range}`),
+  workspace: () => request('/v1/workspaces/current'),
+  updateWorkspace: (body) => request('/v1/workspaces/current', { method: 'PATCH', body: JSON.stringify(body) }),
   audit: () => request('/v1/audit-events'),
   keys: () => request('/v1/api-keys'),
   createKey: () => request('/v1/api-keys', { method: 'POST', body: JSON.stringify({ name: 'Test API Key', environment: 'test', scopes: ['authorizations:create'] }) }),
   revokeKey: (id) => request(`/v1/api-keys/${id}`, { method: 'DELETE' }),
 }
-

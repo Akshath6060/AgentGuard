@@ -6,13 +6,15 @@ from ..security import current_user,require
 from ..utils import clean,now
 from ..services.audit_service import audit
 from ..services.payment_service import initiate
+from ..services.authorization_service import _spend
 
 router=APIRouter(prefix="/v1/approvals",tags=["approvals"])
 @router.get("")
 async def approvals(status:str="pending",user=Depends(current_user)):
     docs=await db.approvals.find({"workspace_id":user["workspace_id"],"status":status}).sort("created_at",-1).to_list(200)
     ids=[d["transaction_id"] for d in docs]; txs=await db.transactions.find({"workspace_id":user["workspace_id"],"transaction_id":{"$in":ids}}).to_list(200); by={t["transaction_id"]:t for t in txs}
-    return {"items":[{**clean(a),"transaction":clean(by.get(a["transaction_id"]))} for a in docs]}
+    can_decide=user["role"] in {"admin","approver"}
+    return {"items":[{**clean(a),"transaction":clean(by.get(a["transaction_id"])),"allowed_actions":["view","approve","reject"] if can_decide else ["view"]} for a in docs]}
 @router.post("/{approval_id}/decision")
 async def decide(approval_id:str,body:ApprovalDecision,request:Request,user=Depends(require("approvals.decide"))):
     existing=await db.approvals.find_one({"workspace_id":user["workspace_id"],"approval_id":approval_id})
@@ -26,6 +28,9 @@ async def decide(approval_id:str,body:ApprovalDecision,request:Request,user=Depe
     if not tx:raise HTTPException(409,"Transaction is no longer pending review")
     agent=await db.agents.find_one({"workspace_id":user["workspace_id"],"agent_id":tx["agent_id"],"status":"active"})
     if body.decision=="approve" and not agent:raise HTTPException(409,"Agent is no longer active")
+    if body.decision=="approve":
+        spend=await _spend(user["workspace_id"],tx["agent_id"]); limits=tx.get("policy_evaluation",{}).get("policy_snapshot",{}).get("limits",{}); amount=tx["amount"]["minor"]
+        if (limits.get("daily") is not None and spend["daily"]+amount>limits["daily"]) or (limits.get("monthly") is not None and spend["monthly"]+amount>limits["monthly"]):raise HTTPException(409,"Spending availability changed; approval can no longer be completed")
     new_status="approved" if body.decision=="approve" else "rejected"
     approval=await db.approvals.find_one_and_update({"_id":existing["_id"],"status":"pending","version":body.version},{"$set":{"status":new_status,"decided_by":user["user_id"],"decided_at":now(),"comment":body.comment},"$inc":{"version":1}},return_document=ReturnDocument.AFTER)
     if not approval:raise HTTPException(409,"This approval has already been decided")
@@ -36,4 +41,3 @@ async def decide(approval_id:str,body:ApprovalDecision,request:Request,user=Depe
     payment=None
     if body.decision=="approve":payment=await initiate(tx["transaction_id"],user["workspace_id"],{"type":"user","id":user["user_id"]},request.state.request_id)
     return {"approval":clean(approval),"transaction_id":tx["transaction_id"],"decision_state":state,"payment":clean(payment)}
-

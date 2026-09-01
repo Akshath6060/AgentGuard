@@ -1,17 +1,20 @@
 import { useState } from 'react'
-import { GENERATED_RULES } from '../data'
-
-export default function PolicyModal({ onClose, onSave }) {
+export default function PolicyModal({ onClose, onSave, onGenerate }) {
   const [generating, setGenerating] = useState(false)
   const [generated, setGenerated] = useState(false)
+  const [text, setText] = useState('')
+  const [rules, setRules] = useState(null)
 
-  const generate = () => {
+  const generate = async () => {
     setGenerating(true)
     setGenerated(false)
-    setTimeout(() => {
-      setGenerating(false)
+    try {
+      const result = await onGenerate(text)
+      setRules(result.rules)
       setGenerated(true)
-    }, 900)
+    } finally {
+      setGenerating(false)
+    }
   }
 
   return (
@@ -32,6 +35,8 @@ export default function PolicyModal({ onClose, onSave }) {
           <textarea
             className="ag-textarea"
             rows={4}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
             placeholder="Allow TravelAgent to spend up to ₹15,000 on flights and hotels without approval. Ask for approval above ₹15,000 and block unknown merchants."
           />
 
@@ -62,7 +67,13 @@ export default function PolicyModal({ onClose, onSave }) {
                   <span style={{ fontSize: 12.5, fontWeight: 600 }}>Structured rules</span>
                   <span style={{ fontSize: 12, color: '#9CA3AF' }}>7 rules · ready to enforce</span>
                 </div>
-                {GENERATED_RULES.map((r) => (
+                {[
+                  ['Transaction Limit', rules?.limits?.per_transaction ? `₹${(rules.limits.per_transaction / 100).toLocaleString('en-IN')}` : 'Not set'],
+                  ['Daily Limit', rules?.limits?.daily ? `₹${(rules.limits.daily / 100).toLocaleString('en-IN')}` : 'Not set'],
+                  ['Allowed Categories', rules?.categories?.allowed?.join(', ') || 'None'],
+                  ['Blocked Categories', rules?.categories?.blocked?.join(', ') || 'None'],
+                  ['Unknown Merchant', rules?.merchant_rules?.unknown || rules?.merchant_rules?.unknown_international || 'Default review'],
+                ].map(([label, value]) => ({ label, value, color: '#111827' })).map((r) => (
                   <div
                     key={r.label}
                     style={{
@@ -78,7 +89,7 @@ export default function PolicyModal({ onClose, onSave }) {
 
               <div style={{ display: 'flex', gap: 9, marginTop: 16, justifyContent: 'flex-end' }}>
                 <button className="ag-btn ag-btn-tall" style={{ color: '#4B5563' }} onClick={onClose}>Edit Rules</button>
-                <button className="ag-btn ag-btn-primary ag-btn-tall" onClick={onSave}>Save Policy</button>
+                <button className="ag-btn ag-btn-primary ag-btn-tall" onClick={() => onSave({ name: `Generated Policy ${new Date().toLocaleDateString()}`, rules, source_text: text })}>Save Policy</button>
               </div>
             </>
           )}

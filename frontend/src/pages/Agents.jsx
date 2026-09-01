@@ -1,11 +1,12 @@
-import { AGENTS, RISK, STAT, AV, initials } from '../data'
+import { RISK, STAT, AV, initials } from '../data'
 
 const COLS = '1.5fr 1.5fr 100px 1fr 1fr 100px 120px'
 const HEADS = ['AGENT', 'PURPOSE', 'STATUS', 'TODAY SPEND', 'MONTHLY SPEND', 'RISK', 'LAST ACTIVITY']
 
 const barColor = (risk) => (risk === 'High' ? '#DC2626' : risk === 'Medium' ? '#D97706' : '#4F46E5')
 
-export default function Agents({ onOpenAgent, onAddAgent }) {
+const money = (minor = 0) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(minor / 100)
+export default function Agents({ agents = [], onOpenAgent, onAddAgent }) {
   return (
     <div className="ag-rise">
       <div className="ag-page-head">
@@ -25,11 +26,11 @@ export default function Agents({ onOpenAgent, onAddAgent }) {
           ))}
         </div>
 
-        {AGENTS.map((a) => (
+        {agents.map((raw, index) => { const a = { ...raw, id: raw.agent_id, purpose: raw.description, status: raw.status[0].toUpperCase() + raw.status.slice(1), today: money(raw.spend?.today), monthly: money(raw.spend?.monthly), pct: `${raw.spend?.percent || 0}%`, risk: (raw.risk?.band || 'low').replace(/^./, (x) => x.toUpperCase()), last: raw.updated_at ? new Date(raw.updated_at).toLocaleString() : '—', av: index % 4 }; return (
           <div
             key={a.id}
             className="ag-row"
-            onClick={onOpenAgent}
+            onClick={() => onOpenAgent(a.id)}
             style={{ minWidth: 980, display: 'grid', gridTemplateColumns: COLS, gap: 12 }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -60,7 +61,7 @@ export default function Agents({ onOpenAgent, onAddAgent }) {
             </span>
             <span style={{ fontSize: 12.5, color: '#9CA3AF', textAlign: 'right' }}>{a.last}</span>
           </div>
-        ))}
+        )})}
       </div>
     </div>
   )

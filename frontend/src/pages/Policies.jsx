@@ -1,7 +1,8 @@
-import { POLICIES, STAT } from '../data'
+import { STAT } from '../data'
 import { Shield } from '../components/Icons'
 
-export default function Policies({ onCreate }) {
+const money = (v) => v == null ? '—' : new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(v / 100)
+export default function Policies({ policies = [], onCreate }) {
   return (
     <div className="ag-rise">
       <div className="ag-page-head">
@@ -15,8 +16,8 @@ export default function Policies({ onCreate }) {
       </div>
 
       <div className="ag-grid-2">
-        {POLICIES.map((p) => (
-          <div key={p.name} className="ag-card ag-card-pad ag-policy-card">
+        {policies.map((raw) => { const p = { ...raw, desc: raw.source_text || 'Deterministic spending controls.', agents: raw.agent_count || '—', txnLimit: money(raw.rules?.limits?.per_transaction), monthly: money(raw.rules?.limits?.monthly), approval: Object.values(raw.rules?.merchant_rules || {}).includes('review') ? 'Rule based' : 'None', status: raw.status.replace(/^./, x => x.toUpperCase()) }; return (
+          <div key={`${p.policy_id}-${p.version}`} className="ag-card ag-card-pad ag-policy-card">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span className="ag-avatar" style={{ width: 30, height: 30, borderRadius: 8, background: '#EEF2FF' }}>
@@ -47,7 +48,7 @@ export default function Policies({ onCreate }) {
               )}
             </div>
           </div>
-        ))}
+        )})}
       </div>
     </div>
   )

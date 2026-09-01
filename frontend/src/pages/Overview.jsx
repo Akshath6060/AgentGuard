@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { TX, RISK, STAT, AV, SERIES, LABELS, initials } from '../data'
+import { RISK, STAT, AV, SERIES, LABELS, initials } from '../data'
 
 const W = 620
 const H = 176
@@ -25,16 +25,22 @@ const STATS = [
 
 const RANGES = [['d7', '7D'], ['d30', '30D'], ['d90', '90D']]
 
-export default function Overview({ onNavigate, onOpenTx, onAddAgent }) {
+export default function Overview({ data, transactions = [], agents = [], onNavigate, onOpenTx, onAddAgent }) {
   const [range, setRange] = useState('d7')
   const chart = useChart(range)
 
-  const activity = TX.slice(0, 5).map((t) => ({
+  const stats = data ? [
+    { label: 'Active Agents', value: String(agents.filter((a) => a.status === 'active').length), meta: `${agents.length} total` },
+    { label: "Approved Agent Spend", value: new Intl.NumberFormat('en-IN', { style: 'currency', currency: data.currency || 'INR', maximumFractionDigits: 0 }).format((data.approved_spend || 0) / 100), meta: `${data.total || 0} requests` },
+    { label: 'Blocked Transactions', value: String(data.blocked || 0), valueColor: '#DC2626', meta: 'prevented before payment' },
+    { label: 'Pending Approvals', value: String(data.approval_pending || 0), valueColor: '#D97706', meta: 'requires a human' },
+  ] : STATS
+  const activity = transactions.slice(0, 5).map((raw, index) => { const t = { id: raw.transaction_id, agent: raw.agent_name || raw.agent_id, merchant: raw.merchant?.name, amount: new Intl.NumberFormat('en-IN', { style: 'currency', currency: raw.amount?.currency || 'INR', maximumFractionDigits: 0 }).format((raw.amount?.minor || 0) / 100), risk: (raw.risk?.band || 'low').replace(/^./, x => x.toUpperCase()), status: raw.decision === 'review' ? 'Review' : (raw.decision || '').replace(/^./, x => x.toUpperCase()), ago: new Date(raw.created_at).toLocaleString(), av: index % 4 }; return ({
     ...t,
     initials: initials(t.agent),
     avatar: AV[t.av],
     label: t.status === 'Review' ? 'Approval Required' : t.status,
-  }))
+  })})
 
   return (
     <div className="ag-rise">
@@ -52,7 +58,7 @@ export default function Overview({ onNavigate, onOpenTx, onAddAgent }) {
       </div>
 
       <div className="ag-grid-4" style={{ marginBottom: 16 }}>
-        {STATS.map((s) => (
+        {stats.map((s) => (
           <div key={s.label} className="ag-card ag-stat">
             <div className="ag-stat-label">{s.label}</div>
             <div className="ag-stat-row">
@@ -114,7 +120,7 @@ export default function Overview({ onNavigate, onOpenTx, onAddAgent }) {
 
         <div className="ag-card ag-card-pad">
           <h2 className="ag-h2" style={{ marginBottom: 3 }}>Risk Distribution</h2>
-          <span className="ag-note">248 evaluated transactions</span>
+          <span className="ag-note">{data?.total || 0} evaluated transactions</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginTop: 18 }}>
             <svg width="118" height="118" viewBox="0 0 42 42">
               <circle cx="21" cy="21" r="15.9" fill="none" stroke="#F3F4F6" strokeWidth="5" />

@@ -2,11 +2,14 @@ import { useState } from 'react'
 import { CATS, SECRULES, TYPES, STEPS, IND } from '../data'
 import { CheckBold } from './Icons'
 
-export default function AddAgentModal({ onClose, onCreate }) {
+export default function AddAgentModal({ onClose, onCreate, policies = [] }) {
   const [step, setStep] = useState(0)
   const [type, setType] = useState('Travel')
   const [cats, setCats] = useState(['Flights', 'Hotels', 'Transportation'])
   const [rules, setRules] = useState([0, 1, 2, 3])
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [policyId, setPolicyId] = useState(policies[0]?.policy_id || '')
 
   const toggleCat = (label) =>
     setCats((c) => (c.includes(label) ? c.filter((x) => x !== label) : c.concat(label)))
@@ -14,12 +17,12 @@ export default function AddAgentModal({ onClose, onCreate }) {
     setRules((r) => (r.includes(i) ? r.filter((x) => x !== i) : r.concat(i)))
 
   const next = () => {
-    if (step === 4) onCreate()
+    if (step === 4) onCreate({ name, description, type: type.toLowerCase(), policy_id: policyId || null })
     else setStep(step + 1)
   }
 
   const reviewRows = [
-    { label: 'Agent name', value: 'TravelAgent-02' },
+    { label: 'Agent name', value: name },
     { label: 'Type', value: type },
     { label: 'Allowed categories', value: cats.length + ' selected' },
     { label: 'Single transaction limit', value: '₹15,000' },
@@ -50,11 +53,18 @@ export default function AddAgentModal({ onClose, onCreate }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div>
                 <label className="ag-label">Agent name</label>
-                <input className="ag-input ag-input-sm" placeholder="e.g. TravelAgent" />
+                <input className="ag-input ag-input-sm" placeholder="e.g. TravelAgent" value={name} onChange={(e) => setName(e.target.value)} />
               </div>
               <div>
                 <label className="ag-label">Description</label>
-                <input className="ag-input ag-input-sm" placeholder="What does this agent do?" />
+                <input className="ag-input ag-input-sm" placeholder="What does this agent do?" value={description} onChange={(e) => setDescription(e.target.value)} />
+              </div>
+              <div>
+                <label className="ag-label">Policy</label>
+                <select className="ag-input ag-input-sm" value={policyId} onChange={(e) => setPolicyId(e.target.value)}>
+                  <option value="">No policy</option>
+                  {policies.map((p) => <option key={`${p.policy_id}-${p.version}`} value={p.policy_id}>{p.name} v{p.version}</option>)}
+                </select>
               </div>
               <div>
                 <label className="ag-label" style={{ marginBottom: 8 }}>Agent type</label>

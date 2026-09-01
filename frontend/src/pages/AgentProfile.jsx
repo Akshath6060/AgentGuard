@@ -1,18 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Check, Cross, DocEmpty } from '../components/Icons'
+import { api } from '../api/client'
 
 const TABS = ['Overview', 'Transactions', 'Permissions', 'Policies', 'Logs']
-const ALLOWED = ['Flights', 'Hotels', 'Transportation', 'Food']
-const RESTRICTED = ['Electronics', 'Cryptocurrency', 'Gift Cards', 'Unknown Categories']
-
-const CONTROLS = [
-  { label: 'Maximum single transaction', value: '₹15,000', color: '#111827' },
-  { label: 'Daily spending limit', value: '₹30,000', color: '#111827' },
-  { label: 'Monthly spending limit', value: '₹50,000', color: '#111827' },
-  { label: 'International payments', value: 'Disabled', color: '#DC2626' },
-  { label: 'Recurring payments', value: 'Approval Required', color: '#D97706' },
-]
-
 const RECENT = [
   { text: '₹8,450 → IndiGo approved', time: '2 sec ago', color: '#16A34A' },
   { text: '₹18,700 → MakeMyTrip sent for approval', time: '2 min ago', color: '#D97706' },
@@ -27,8 +17,21 @@ const SUMMARY = [
   ['Transaction Limit', '₹15,000'],
 ]
 
-export default function AgentProfile({ onBack, onToast }) {
+export default function AgentProfile({ agentId, onBack, onToast, onChanged }) {
   const [tab, setTab] = useState('Overview')
+  const [agent, setAgent] = useState(null)
+  useEffect(() => { if (agentId) api.agent(agentId).then(setAgent).catch((e) => onToast(e.message, '#DC2626')) }, [agentId, onToast])
+  if (!agent) return <div className="ag-card ag-card-pad">Loading agent…</div>
+  const allowed = agent.policy?.rules?.categories?.allowed || []
+  const restricted = agent.policy?.rules?.categories?.blocked || []
+  const limits = agent.policy?.rules?.limits || {}
+  const format = (v) => v == null ? '—' : new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(v / 100)
+  const controls = [
+    { label: 'Maximum single transaction', value: format(limits.per_transaction), color: '#111827' },
+    { label: 'Daily spending limit', value: format(limits.daily), color: '#111827' },
+    { label: 'Monthly spending limit', value: format(limits.monthly), color: '#111827' },
+    { label: 'International payments', value: agent.policy?.rules?.international?.allowed ? 'Enabled' : 'Disabled', color: agent.policy?.rules?.international?.allowed ? '#16A34A' : '#DC2626' },
+  ]
 
   return (
     <div className="ag-rise">
@@ -40,20 +43,19 @@ export default function AgentProfile({ onBack, onToast }) {
             className="ag-avatar"
             style={{ width: 48, height: 48, borderRadius: 12, background: '#EEF2FF', color: '#4F46E5', fontSize: 15 }}
           >
-            TA
+            {agent.name.slice(0, 2).toUpperCase()}
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-              <h1 style={{ margin: 0, fontSize: 26, fontWeight: 600, letterSpacing: '-0.02em' }}>TravelAgent-AI</h1>
-              <span className="ag-badge" style={{ background: '#DCFCE7', color: '#15803D' }}>Active</span>
+              <h1 style={{ margin: 0, fontSize: 26, fontWeight: 600, letterSpacing: '-0.02em' }}>{agent.name}</h1>
+              <span className="ag-badge" style={{ background: agent.status === 'active' ? '#DCFCE7' : '#F3F4F6', color: agent.status === 'active' ? '#15803D' : '#6B7280' }}>{agent.status}</span>
             </div>
-            <p style={{ margin: '0 0 4px', fontSize: 14, color: '#6B7280' }}>AI travel booking assistant</p>
-            <span className="ag-mono" style={{ fontSize: 12, color: '#9CA3AF' }}>agt_travel_01</span>
+            <p style={{ margin: '0 0 4px', fontSize: 14, color: '#6B7280' }}>{agent.description}</p>
+            <span className="ag-mono" style={{ fontSize: 12, color: '#9CA3AF' }}>{agent.agent_id}</span>
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="ag-btn" onClick={() => onToast('TravelAgent paused', '#D97706')}>Pause Agent</button>
-          <button className="ag-btn ag-btn-primary" onClick={() => onToast('Agent settings opened')}>Edit Agent</button>
+          <button className="ag-btn" onClick={async () => { try { const updated = await api.agentState(agent.agent_id, agent.status === 'active' ? 'pause' : 'resume'); setAgent({ ...agent, status: updated.status }); await onChanged(); onToast(`Agent ${updated.status}`) } catch (e) { onToast(e.message, '#DC2626') } }}>{agent.status === 'active' ? 'Pause Agent' : 'Resume Agent'}</button>
         </div>
       </div>
 
@@ -92,7 +94,7 @@ export default function AgentProfile({ onBack, onToast }) {
 
             <span style={{ fontSize: 11.5, fontWeight: 600, color: '#15803D', letterSpacing: '0.04em' }}>ALLOWED</span>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '10px 0 18px' }}>
-              {ALLOWED.map((p) => (
+              {allowed.map((p) => (
                 <div
                   key={p}
                   style={{
@@ -111,7 +113,7 @@ export default function AgentProfile({ onBack, onToast }) {
 
             <span style={{ fontSize: 11.5, fontWeight: 600, color: '#B91C1C', letterSpacing: '0.04em' }}>RESTRICTED</span>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 10 }}>
-              {RESTRICTED.map((p) => (
+              {restricted.map((p) => (
                 <div
                   key={p}
                   style={{
@@ -135,7 +137,7 @@ export default function AgentProfile({ onBack, onToast }) {
               <p style={{ margin: '0 0 14px', fontSize: 12.5, color: '#6B7280' }}>
                 Hard limits enforced before every payment.
               </p>
-              {CONTROLS.map((c) => (
+              {controls.map((c) => (
                 <div
                   key={c.label}
                   className="ag-divider-row"

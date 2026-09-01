@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
-import { TX, DETAILS, STAT, sigColor, sigBg, resColor } from '../data'
+import { STAT, sigColor, sigBg, resColor } from '../data'
 import { ArrowRight, CheckBold, Razorpay } from '../components/Icons'
+import { api } from '../api/client'
 
 const RING = 2 * Math.PI * 16.5
 const PIPE_LABELS = ['Agent Request', 'Intent Analysis', 'Policy Check', 'Risk Analysis', 'Payment Decision']
 
 export default function TransactionDetail({ txId, onBack, onToast }) {
   const [pipe, setPipe] = useState(0)
+  const [raw, setRaw] = useState(null)
+  const [error, setError] = useState('')
   const timer = useRef(null)
 
   const run = () => {
@@ -25,12 +28,24 @@ export default function TransactionDetail({ txId, onBack, onToast }) {
 
   useEffect(() => {
     run()
+    setRaw(null); setError('')
+    api.transaction(txId).then(setRaw).catch((e) => setError(e.message))
     return () => clearInterval(timer.current)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [txId])
 
-  const d = DETAILS[txId] || DETAILS['AGTX-40290']
-  const tx = TX.find((t) => t.id === txId) || TX[1]
+  if (error) return <div className="ag-card ag-card-pad"><button className="ag-btn-back" onClick={onBack}>← Transactions</button><p>{error}</p></div>
+  if (!raw) return <div className="ag-card ag-card-pad">Loading transaction…</div>
+  const title = (value) => String(value || '').replaceAll('_', ' ').replace(/\b\w/g, (x) => x.toUpperCase())
+  const tx = { status: raw.decision === 'review' ? 'Review' : title(raw.decision), amount: new Intl.NumberFormat('en-IN', { style: 'currency', currency: raw.amount?.currency || 'INR', maximumFractionDigits: 0 }).format((raw.amount?.minor || 0) / 100), agent: raw.agent_name || raw.agent_id, merchant: raw.merchant?.name }
+  const d = {
+    score: raw.risk?.score || 0, scoreLabel: `${title(raw.risk?.band)} risk`, scoreNote: `${title(raw.decision_state)} · ${raw.total_decision_latency_ms || 0} ms decision latency.`,
+    question: `Why was this transaction ${raw.decision}?`, policy: `${raw.policy_evaluation?.policy_id} v${raw.policy_evaluation?.policy_version}`, category: raw.merchant?.category,
+    date: new Date(raw.created_at).toLocaleString(), payStatus: title(raw.payment?.status), payColor: raw.payment?.status === 'succeeded' ? '#16A34A' : '#6B7280', payId: raw.payment?.provider_payment_id || raw.payment?.provider_order_id || '—',
+    intent: raw.intent?.description || raw.purpose, justification: raw.intent?.justification || 'No justification provided.',
+    signals: (raw.risk?.signals || []).filter((s) => s.triggered).map((s) => ({ level: s.weight >= 20 ? 'High Risk' : s.weight > 0 ? 'Medium Risk' : 'Passed', title: title(s.code), detail: s.explanation })),
+    checks: (raw.policy_evaluation?.checks || []).map((c) => [title(c.code), c.result === 'pass' ? 'Passed' : c.result === 'review' ? 'Review' : 'Failed']),
+  }
   const score = d.score
   const scoreColor = score >= 70 ? '#DC2626' : score >= 40 ? '#D97706' : '#16A34A'
   const statusUpper = tx.status === 'Review' ? 'NEEDS APPROVAL' : tx.status.toUpperCase()
@@ -207,13 +222,13 @@ export default function TransactionDetail({ txId, onBack, onToast }) {
             ))}
           </div>
 
-          <div className="ag-card ag-card-pad">
+          {raw.allowed_actions?.some((a) => ['approve', 'reject'].includes(a)) && <div className="ag-card ag-card-pad">
             <h2 className="ag-h2" style={{ marginBottom: 12 }}>Actions</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
               <button
                 className="ag-btn ag-btn-primary"
                 style={{ height: 40, fontSize: 13.5 }}
-                onClick={() => onToast('Transaction approved once')}
+                onClick={() => onToast('Use the Approval Center to record this decision')}
               >
                 Approve Once
               </button>
@@ -232,7 +247,7 @@ export default function TransactionDetail({ txId, onBack, onToast }) {
                 Add Merchant to Allowlist
               </button>
             </div>
-          </div>
+          </div>}
 
           <div className="ag-card ag-card-pad">
             <span className="ag-eyebrow">PAYMENT PROVIDER</span>

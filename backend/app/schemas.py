@@ -102,3 +102,12 @@ class APIKeyCreate(BaseModel):
     environment: Literal["test", "live"] = "test"
     scopes: list[str] = ["authorizations:create"]
 
+
+class WorkspacePatch(BaseModel):
+    name: str | None = Field(None, min_length=2, max_length=100)
+    default_currency: str | None = Field(None, min_length=3, max_length=3)
+
+    @field_validator("default_currency")
+    @classmethod
+    def currency_upper(cls, value):
+        return value.upper() if value else value

@@ -1,125 +1,105 @@
 # AgentGuard
 
-AgentGuard is an AI payment-governance console for monitoring autonomous agents, enforcing spending policies, reviewing risky transactions, and maintaining an auditable decision history.
-
-The repository currently contains a functional React demonstration powered by mock data. A production backend is planned; its domain model, API surface, security requirements, and delivery phases are documented in [FRONTEND_BACKEND_AUDIT.md](./FRONTEND_BACKEND_AUDIT.md).
-
-## Current status
-
-| Area | Status |
-| --- | --- |
-| Frontend | React/Vite demo implemented |
-| Backend | Planned, not yet implemented |
-| Authentication | Simulated in the frontend |
-| Data persistence | Mock in-memory data |
-| Payment integrations | UI demonstration only |
-
-> This project is currently a prototype. Do not use it to authorize or process real payments.
-
-## Features
-
-- Overview dashboard with spend, risk, and activity metrics
-- Agent creation, configuration, limits, and permissions
-- Transaction monitoring and detailed risk analysis
-- Human approval and rejection workflow
-- Policy creation and management
-- Risk center and audit-log views
-- Developer API-key and integration screens
-- Workspace and payment-provider settings
-
-## Technology
-
-- React 19
-- Vite 8
-- JavaScript and JSX
-- Oxlint
-- Plain React state and mock data
-
-## Repository structure
+AgentGuard is a governance and payment-authorization layer for autonomous AI agents. It sits before payment execution, authenticates the agent, evaluates deterministic workspace policy, scores explainable risk, and returns `approved`, `review`, or `blocked`. Only approved decisions can reach Razorpay or the local payment simulator.
 
 ```text
-AgentGuard/
-├── frontend/                    React application
-│   ├── public/                  Static assets
-│   ├── src/
-│   │   ├── assets/              Frontend assets
-│   │   ├── components/          Shared UI components
-│   │   ├── pages/               Application screens
-│   │   ├── App.jsx              Root state and page flow
-│   │   ├── data.js              Mock application data
-│   │   ├── index.css            Global styling
-│   │   └── main.jsx             Application entry point
-│   ├── AgentGuard dashboard mockups/
-│   ├── package.json
-│   └── vite.config.js
-├── FRONTEND_BACKEND_AUDIT.md    Backend planning and API report
-├── README.md
-└── .gitignore
+AI Agent -> AgentGuard Authorization API -> Policy Engine -> Risk Engine
+                                                    |-> APPROVED -> Razorpay/mock
+                                                    |-> REVIEW -> Human approval -> Razorpay/mock
+                                                    `-> BLOCKED -> no provider call
 ```
 
-The future backend should live in a root-level `backend/` directory so frontend and backend code remain independently installable and deployable.
+This repository preserves the existing React/Vite interface and connects it to a Python/FastAPI and MongoDB backend.
 
-## Getting started
+## Architecture and stack
 
-### Prerequisites
+- React 19 + Vite frontend with one centralized client in `frontend/src/api/client.js`
+- FastAPI and Pydantic REST API
+- modern asynchronous PyMongo client and programmatic MongoDB indexes
+- JWT human sessions, server-side workspace membership, and RBAC
+- hashed random agent/API credentials; plaintext returned once
+- deterministic versioned policy and explainable risk engines
+- atomic, versioned approval decisions and authorization idempotency
+- mock payments by default; Razorpay Test Mode and signed webhooks when configured
+- immutable audit events and measured authorization traces
 
-- Node.js
-- npm
+The backend separates route handlers, services, engines, database configuration, and external integrations under `backend/app/`.
 
-### Install and run
+## Local setup
+
+Prerequisites: Python 3.11+, Node.js 20+, npm, and MongoDB 7+ (local or Atlas).
 
 ```bash
-git clone <repository-url>
-cd AgentGuard/frontend
-npm install
-npm run dev
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+python seed.py
+uvicorn app.main:app --reload --port 8000
 ```
 
-Open [http://localhost:5173](http://localhost:5173) in your browser.
-
-The demo accepts any sign-in credentials. The two-factor code is prefilled, and either sample workspace can be selected.
-
-## Available scripts
-
-Run these commands from `frontend/`:
-
-| Command | Purpose |
-| --- | --- |
-| `npm run dev` | Start the Vite development server |
-| `npm run build` | Create a production build in `frontend/dist/` |
-| `npm run preview` | Preview the production build locally |
-| `npm run lint` | Run Oxlint checks |
-
-## Environment variables
-
-No environment variables are required for the current frontend demo.
-
-When backend configuration is introduced, commit only example files such as `.env.example`. Real `.env` files, credentials, API keys, local databases, dependencies, caches, and build output are excluded by `.gitignore`.
-
-## Backend planning
-
-The backend planning report covers:
-
-- Recommended domain models
-- Transaction, decision, approval, and payment states
-- Proposed REST API endpoints
-- Authorization response contracts
-- Authentication and workspace isolation
-- Security, compliance, idempotency, and audit requirements
-- A phased implementation plan and acceptance scenarios
-
-Read [FRONTEND_BACKEND_AUDIT.md](./FRONTEND_BACKEND_AUDIT.md) before implementing the backend.
-
-## Before committing
+In another terminal:
 
 ```bash
 cd frontend
-npm run lint
-npm run build
+npm install
+VITE_API_BASE_URL=http://localhost:8000 npm run dev
 ```
 
-Generated dependencies and build artifacts are ignored and should not be committed.
+Open `http://localhost:5173`. The seed login is `admin@agentguard.local` / `AgentGuard123!`. Seed-created agent credentials are printed exactly once. Re-running the seed does not reveal existing credentials.
 
-## Design source
+For Atlas, set `MONGODB_URI` to the Atlas connection string and `MONGODB_DB_NAME=agentguard`. Never commit `.env`.
 
-The original dashboard design canvas and support files are stored in `frontend/AgentGuard dashboard mockups/`.
+## Configuration
+
+See `backend/.env.example`. Set a random `JWT_SECRET` of at least 32 characters outside local demos. `PAYMENT_MODE=mock` works without payment credentials. For Razorpay Test Mode, use `PAYMENT_MODE=razorpay` and configure `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, and `RAZORPAY_WEBHOOK_SECRET`; point the provider webhook at `POST /v1/payments/razorpay/webhook`.
+
+`AI_POLICY_PROVIDER=mock` uses the deterministic fallback parser. Generated policy JSON is a Pydantic-validated draft and must be published by an admin; AI output never authorizes payments.
+
+## Authorization example
+
+Money is always integer minor units: ₹8,450 is `845000` INR.
+
+```bash
+curl -X POST http://localhost:8000/v1/authorizations \
+  -H 'Content-Type: application/json' \
+  -H 'X-Agent-Key: <one-time-agent-secret>' \
+  -d '{
+    "agent_id":"agt_travel_01",
+    "amount":845000,
+    "currency":"INR",
+    "merchant":{"name":"IndiGo","category":"airline","country":"IN"},
+    "purpose":"Flight booking",
+    "intent":{"description":"Book Kozhikode to Bengaluru","justification":"Client meeting"},
+    "idempotency_key":"booking_127",
+    "metadata":{"order_reference":"TRIP-102"}
+  }'
+```
+
+The response includes a transaction ID, deterministic decision, stable reason codes, policy version, risk band, allowed actions, request ID, and an approval reference when review is required. Transaction detail retains the complete policy snapshot, checks, risk signals, and measured decision trace.
+
+## Demo scenarios
+
+- TravelAgent, ₹8,450, IndiGo/airline: known allowed merchant, low risk, approved and paid in mock mode.
+- ProcurementAgent, ₹34,000, new international supplier: review; the Approval Center can approve it once and initiate payment.
+- InvestmentAgent, ₹80,000, cryptocurrency: hard `CATEGORY_BLOCKED`; no payment call occurs.
+
+The seed creates schema-compatible history for all three states.
+
+## Security design
+
+Tenant reads and mutations use the active membership workspace from `X-Workspace-ID`; caller-supplied document workspace IDs are ignored. RBAC is enforced for admin, approver, developer, and viewer roles. Secrets and passwords are hashed, provider secrets are environment-only, CORS is explicit, request IDs are returned, approval updates use compare-and-set conditions, webhook events and authorization retries are deduplicated, and blocked/rejected/expired transactions cannot enter payment processing.
+
+For production, add refresh-token rotation/revocation, distributed rate limiting, encrypted secret management, MongoDB transactions for multi-document state changes, a reservation ledger, stronger merchant identity, MFA/SSO, provider reconciliation, structured telemetry, and independent security review. The risk engine is explainable hackathon logic, not a fraud ML model.
+
+## Tests and verification
+
+```bash
+python -m unittest discover -s backend/tests -v
+cd frontend && npm run lint && npm run build
+```
+
+The deterministic tests cover the primary outcomes. Before deployment, run integration tests against disposable MongoDB for approval races, idempotency, workspace isolation, paused/revoked credentials, payment gating, and webhook replay.
+
+Interactive API documentation is at `http://localhost:8000/docs` while the backend runs. The detailed frontend-to-backend product map remains in `FRONTEND_BACKEND_AUDIT.md`.

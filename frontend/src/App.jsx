@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { APPROVALS, PAGE_TITLES, WORKSPACES } from './data'
+import { PAGE_TITLES } from './data'
+import { api, setSession } from './api/client'
 
 import Sidebar from './components/Sidebar'
 import Topbar from './components/Topbar'
@@ -23,10 +24,17 @@ import Settings from './pages/Settings'
 export default function App() {
   const [screen, setScreen] = useState('login')
   const [page, setPage] = useState('overview')
-  const [workspace, setWorkspace] = useState(WORKSPACES[0])
+  const [workspace, setWorkspace] = useState(null)
+  const [workspaces, setWorkspaces] = useState([])
   const [menuOpen, setMenuOpen] = useState(false)
   const [txId, setTxId] = useState('AGTX-40290')
-  const [approvals, setApprovals] = useState(APPROVALS)
+  const [approvals, setApprovals] = useState([])
+  const [agents, setAgents] = useState([])
+  const [transactions, setTransactions] = useState([])
+  const [policies, setPolicies] = useState([])
+  const [auditEvents, setAuditEvents] = useState([])
+  const [dashboard, setDashboard] = useState(null)
+  const [agentId, setAgentId] = useState(null)
 
   const [policyOpen, setPolicyOpen] = useState(false)
   const [agentModalOpen, setAgentModalOpen] = useState(false)
@@ -47,7 +55,24 @@ export default function App() {
     setPage('detail')
   }
 
+  const refresh = useCallback(async () => {
+    try {
+      const [a, t, p, ap, d, ev] = await Promise.all([api.agents(), api.transactions(), api.policies(), api.approvals(), api.dashboard(), api.audit()])
+      setAgents(a.items); setTransactions(t.items); setPolicies(p.items); setApprovals(ap.items); setDashboard(d); setAuditEvents(ev.items)
+    } catch (e) { say(e.message, '#DC2626') }
+  }, [say])
+
+  const login = async (email, password) => {
+    try {
+      const result = await api.login(email, password)
+      setSession(result.access_token)
+      setWorkspaces(result.workspaces.map((w) => ({ ...w, initials: w.name.slice(0, 2).toUpperCase(), meta: `${w.environment} workspace`, env: w.environment === 'live' ? 'Live' : 'Test', bg: '#EEF2FF', fg: '#4F46E5', envBg: '#F3F4F6', envFg: '#6B7280' })))
+      setScreen('workspace')
+    } catch (e) { say(e.message, '#DC2626'); throw e }
+  }
+
   const enterWorkspace = (w) => {
+    setSession(undefined, w.workspace_id)
     setWorkspace(w)
     setScreen('app')
     setPage('overview')
@@ -55,23 +80,24 @@ export default function App() {
     say('Signed in to ' + w.name)
   }
 
+  useEffect(() => { if (screen === 'app' && workspace) refresh() }, [screen, workspace, refresh])
+
   if (screen !== 'app') {
-    return <Auth screen={screen} onScreen={setScreen} onEnterWorkspace={enterWorkspace} />
+    return <><Auth screen={screen} onScreen={setScreen} onEnterWorkspace={enterWorkspace} onLogin={login} workspaces={workspaces} /><Toast message={toast.message} color={toast.color} /></>
   }
 
   const openAddAgent = () => setAgentModalOpen(true)
 
-  const resolveApproval = (index, approval, approved) => {
-    setApprovals((list) => list.filter((_, j) => j !== index))
-    if (approved) say('Payment approved · ' + approval.amount + ' to ' + approval.merchant)
-    else say('Payment rejected', '#DC2626')
+  const resolveApproval = async (_index, approval, approved) => {
+    try { await api.decide(approval.approval_id, approved ? 'approve' : 'reject', approval.version); await refresh(); say(approved ? 'Payment approved' : 'Payment rejected', approved ? '#16A34A' : '#DC2626') }
+    catch (e) { say(e.message, '#DC2626') }
   }
 
   const pages = {
-    overview: <Overview onNavigate={setPage} onOpenTx={openTx} onAddAgent={openAddAgent} />,
-    agents: <Agents onOpenAgent={() => setPage('agentProfile')} onAddAgent={openAddAgent} />,
-    agentProfile: <AgentProfile onBack={() => setPage('agents')} onToast={say} />,
-    transactions: <Transactions onOpenTx={openTx} />,
+    overview: <Overview data={dashboard} transactions={transactions} agents={agents} onNavigate={setPage} onOpenTx={openTx} onAddAgent={openAddAgent} />,
+    agents: <Agents agents={agents} onOpenAgent={(id) => { setAgentId(id); setPage('agentProfile') }} onAddAgent={openAddAgent} />,
+    agentProfile: <AgentProfile agentId={agentId} onBack={() => setPage('agents')} onToast={say} onChanged={refresh} />,
+    transactions: <Transactions transactions={transactions} onSearch={async (params) => setTransactions((await api.transactions(params)).items)} onOpenTx={openTx} />,
     detail: <TransactionDetail txId={txId} onBack={() => setPage('transactions')} onToast={say} />,
     approvals: (
       <Approvals
@@ -81,11 +107,11 @@ export default function App() {
         onView={openTx}
       />
     ),
-    policies: <Policies onCreate={() => setPolicyOpen(true)} />,
+    policies: <Policies policies={policies} onCreate={() => setPolicyOpen(true)} />,
     risk: <RiskCenter />,
-    audit: <AuditLogs />,
+    audit: <AuditLogs events={auditEvents} />,
     developers: <Developers onToast={say} />,
-    settings: <Settings workspace={workspace} />,
+    settings: <Settings workspace={workspace} onToast={say} />,
   }
 
   return (
@@ -107,6 +133,7 @@ export default function App() {
             setMenuOpen(false)
           }}
           onSignOut={() => {
+            setSession('', '')
             setScreen('login')
             setMenuOpen(false)
             setPage('overview')
@@ -119,9 +146,9 @@ export default function App() {
       {policyOpen && (
         <PolicyModal
           onClose={() => setPolicyOpen(false)}
-          onSave={() => {
-            setPolicyOpen(false)
-            say('Policy saved and enforcing')
+          onGenerate={api.generatePolicy}
+          onSave={async (draft) => {
+            try { const created = await api.createPolicy(draft); await api.publishPolicy(created.policy_id); setPolicyOpen(false); await refresh(); say('Policy saved and enforcing') } catch (e) { say(e.message, '#DC2626') }
           }}
         />
       )}
@@ -129,9 +156,9 @@ export default function App() {
       {agentModalOpen && (
         <AddAgentModal
           onClose={() => setAgentModalOpen(false)}
-          onCreate={() => {
-            setAgentModalOpen(false)
-            say('Agent created successfully')
+          policies={policies.filter((p) => p.status === 'active')}
+          onCreate={async (body) => {
+            try { await api.createAgent(body); setAgentModalOpen(false); await refresh(); say('Agent created successfully') } catch (e) { say(e.message, '#DC2626') }
           }}
         />
       )}
