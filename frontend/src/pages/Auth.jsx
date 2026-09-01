@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Logo, Check, CheckBold } from '../components/Icons'
-import { WORKSPACES } from '../data'
 
 const PROMISES = [
   'Policy checks run in under 400 ms, before authorisation',
@@ -54,17 +53,18 @@ function Brand() {
 }
 
 function Login({ onSubmit }) {
-  const [email, setEmail] = useState('ops@nexora.in')
-  const [password, setPassword] = useState('demopassword')
+  const [email, setEmail] = useState('admin@agentguard.local')
+  const [password, setPassword] = useState('AgentGuard123!')
   const [keepSignedIn, setKeepSignedIn] = useState(true)
   const [signingIn, setSigningIn] = useState(false)
 
-  const submit = () => {
+  const submit = async () => {
     setSigningIn(true)
-    setTimeout(() => {
+    try {
+      await onSubmit(email, password)
+    } finally {
       setSigningIn(false)
-      onSubmit()
-    }, 700)
+    }
   }
 
   return (
@@ -115,7 +115,7 @@ function Login({ onSubmit }) {
       </button>
 
       <p style={{ margin: '22px 0 0', fontSize: 12.5, color: '#9CA3AF', textAlign: 'center' }}>
-        Demo environment — any credentials continue.
+        Demo credentials are prefilled after running the seed script.
       </p>
     </div>
   )
@@ -158,15 +158,15 @@ function Verify({ onSubmit, onBack }) {
   )
 }
 
-function WorkspacePicker({ onEnter, onBack }) {
+function WorkspacePicker({ onEnter, onBack, workspaces }) {
   return (
     <div className="ag-rise">
       <h2 style={{ margin: '0 0 6px', fontSize: 24, fontWeight: 600, letterSpacing: '-0.02em' }}>Choose a workspace</h2>
       <p style={{ margin: '0 0 22px', fontSize: 13.5, color: '#6B7280' }}>
-        You have access to two AgentGuard workspaces.
+        Choose an authorized AgentGuard workspace.
       </p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {WORKSPACES.map((w) => (
+        {workspaces.map((w) => (
           <button key={w.name} className="ag-ws-btn" onClick={() => onEnter(w)}>
             <span
               className="ag-avatar"
@@ -195,15 +195,15 @@ function WorkspacePicker({ onEnter, onBack }) {
   )
 }
 
-export default function Auth({ screen, onScreen, onEnterWorkspace }) {
+export default function Auth({ screen, onScreen, onEnterWorkspace, onLogin, workspaces = [] }) {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#F7F8FA' }}>
       <Brand />
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
         <div style={{ width: '100%', maxWidth: 380 }}>
-          {screen === 'login' && <Login onSubmit={() => onScreen('verify')} />}
+          {screen === 'login' && <Login onSubmit={onLogin} />}
           {screen === 'verify' && <Verify onSubmit={() => onScreen('workspace')} onBack={() => onScreen('login')} />}
-          {screen === 'workspace' && <WorkspacePicker onEnter={onEnterWorkspace} onBack={() => onScreen('login')} />}
+          {screen === 'workspace' && <WorkspacePicker workspaces={workspaces} onEnter={onEnterWorkspace} onBack={() => onScreen('login')} />}
         </div>
       </div>
     </div>
