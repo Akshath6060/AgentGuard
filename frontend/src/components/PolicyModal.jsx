@@ -4,14 +4,18 @@ export default function PolicyModal({ onClose, onSave, onGenerate }) {
   const [generated, setGenerated] = useState(false)
   const [text, setText] = useState('')
   const [rules, setRules] = useState(null)
+  const [error, setError] = useState('')
 
   const generate = async () => {
     setGenerating(true)
     setGenerated(false)
+    setError('')
     try {
       const result = await onGenerate(text)
       setRules(result.rules)
       setGenerated(true)
+    } catch (e) {
+      setError(e.message)
     } finally {
       setGenerating(false)
     }
@@ -50,6 +54,7 @@ export default function PolicyModal({ onClose, onSave, onGenerate }) {
                 : 'AgentGuard converts plain language into enforceable rules.'}
             </span>
           </div>
+          {error && <p style={{ color: '#DC2626', fontSize: 12.5 }}>{error}</p>}
 
           {generated && (
             <>

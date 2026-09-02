@@ -1,41 +1,42 @@
 import { useMemo, useState } from 'react'
-import { RISK, STAT, AV, SERIES, LABELS, initials } from '../data'
+import { RISK, STAT, AV, initials } from '../data'
 
 const W = 620
 const H = 176
 const MAX = 60
 
-function useChart(range) {
+function useChart(range, trend) {
   return useMemo(() => {
-    const pts = SERIES[range]
-    const xy = pts.map((v, i) => [i * (W / (pts.length - 1)), H - (v / MAX) * (H - 24)])
+    const source = trend?.length ? trend : null
+    const count = range === 'd7' ? 7 : range === 'd30' ? 10 : 12
+    const pts = source ? source.map((p) => p.amount_minor / 100) : Array(count).fill(0)
+    const max = Math.max(...pts, 1)
+    const xy = pts.map((v, i) => [i * (W / Math.max(pts.length - 1, 1)), H - (v / MAX) * (H - 24)])
     const line = 'M' + xy.map((p) => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L ')
     const area = line + ' L ' + W + ' ' + H + ' L 0 ' + H + ' Z'
     const last = xy[xy.length - 1]
-    return { line, area, lastX: last[0], lastY: last[1], labels: LABELS[range] }
-  }, [range])
+    const scaled = pts.map((v, i) => [i * (W / Math.max(pts.length - 1, 1)), H - (v / max) * (H - 24)])
+    const scaledLine = 'M' + scaled.map((p) => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L ')
+    const scaledLast = scaled[scaled.length - 1]
+    return { line: source ? scaledLine : line, area: source ? scaledLine + ' L ' + W + ' ' + H + ' L 0 ' + H + ' Z' : area, lastX: source ? scaledLast[0] : last[0], lastY: source ? scaledLast[1] : last[1], labels: source ? source.map((p) => new Date(p.date).toLocaleDateString([], { month: 'short', day: 'numeric' })) : pts.map(() => '') }
+  }, [range, trend])
 }
-
-const STATS = [
-  { label: 'Active Agents', value: '12', meta: '+2 this week', metaColor: '#16A34A', metaWeight: 500 },
-  { label: "Today's Agent Spend", value: '₹42,840', meta: 'of ₹1,20,000' },
-  { label: 'Blocked Transactions', value: '7', valueColor: '#DC2626', meta: '₹2.4L prevented' },
-  { label: 'Pending Approvals', value: '3', valueColor: '#D97706', meta: 'oldest 2 min' },
-]
 
 const RANGES = [['d7', '7D'], ['d30', '30D'], ['d90', '90D']]
 
-export default function Overview({ data, transactions = [], agents = [], onNavigate, onOpenTx, onAddAgent }) {
+export default function Overview({ data, transactions = [], agents = [], onRange, onNavigate, onOpenTx, onAddAgent }) {
   const [range, setRange] = useState('d7')
-  const chart = useChart(range)
+  const chart = useChart(range, data?.spend_trend)
+  const riskTotal = Math.max(1, Object.values(data?.risk_distribution || {}).reduce((a, b) => a + b, 0))
+  const riskPct = (band) => Math.round(((data?.risk_distribution?.[band] || 0) * 100) / riskTotal)
 
   const stats = data ? [
     { label: 'Active Agents', value: String(agents.filter((a) => a.status === 'active').length), meta: `${agents.length} total` },
     { label: "Approved Agent Spend", value: new Intl.NumberFormat('en-IN', { style: 'currency', currency: data.currency || 'INR', maximumFractionDigits: 0 }).format((data.approved_spend || 0) / 100), meta: `${data.total || 0} requests` },
     { label: 'Blocked Transactions', value: String(data.blocked || 0), valueColor: '#DC2626', meta: 'prevented before payment' },
     { label: 'Pending Approvals', value: String(data.approval_pending || 0), valueColor: '#D97706', meta: 'requires a human' },
-  ] : STATS
-  const activity = transactions.slice(0, 5).map((raw, index) => { const t = { id: raw.transaction_id, agent: raw.agent_name || raw.agent_id, merchant: raw.merchant?.name, amount: new Intl.NumberFormat('en-IN', { style: 'currency', currency: raw.amount?.currency || 'INR', maximumFractionDigits: 0 }).format((raw.amount?.minor || 0) / 100), risk: (raw.risk?.band || 'low').replace(/^./, x => x.toUpperCase()), status: raw.decision === 'review' ? 'Review' : (raw.decision || '').replace(/^./, x => x.toUpperCase()), ago: new Date(raw.created_at).toLocaleString(), av: index % 4 }; return ({
+  ] : [{ label: 'Active Agents', value: '—', meta: 'Loading' }, { label: 'Approved Agent Spend', value: '—', meta: 'Loading' }, { label: 'Blocked Transactions', value: '—', meta: 'Loading' }, { label: 'Pending Approvals', value: '—', meta: 'Loading' }]
+  const activity = transactions.slice(0, 5).map((raw, index) => { const status = raw.decision_state === 'approved_by_human' ? 'Human Approved' : raw.decision_state === 'rejected_by_human' ? 'Rejected' : raw.decision === 'review' ? 'Review' : (raw.decision || '').replace(/^./, x => x.toUpperCase()); const t = { id: raw.transaction_id, agent: raw.agent_name || raw.agent_id, merchant: raw.merchant?.name, amount: new Intl.NumberFormat('en-IN', { style: 'currency', currency: raw.amount?.currency || 'INR', maximumFractionDigits: 0 }).format((raw.amount?.minor || 0) / 100), risk: (raw.risk?.band || 'low').replace(/^./, x => x.toUpperCase()), status, ago: new Date(raw.created_at).toLocaleString(), av: index % 4 }; return ({
     ...t,
     initials: initials(t.agent),
     avatar: AV[t.av],
@@ -80,7 +81,7 @@ export default function Overview({ data, transactions = [], agents = [], onNavig
               {RANGES.map(([key, label]) => (
                 <button
                   key={key}
-                  onClick={() => setRange(key)}
+                  onClick={() => { setRange(key); onRange(key.replace('d', '') + 'd') }}
                   style={{
                     border: 0, cursor: 'pointer', font: '500 12px Inter, sans-serif',
                     padding: '5px 11px', borderRadius: 6,
@@ -124,14 +125,12 @@ export default function Overview({ data, transactions = [], agents = [], onNavig
           <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginTop: 18 }}>
             <svg width="118" height="118" viewBox="0 0 42 42">
               <circle cx="21" cy="21" r="15.9" fill="none" stroke="#F3F4F6" strokeWidth="5" />
-              <circle cx="21" cy="21" r="15.9" fill="none" stroke="#16A34A" strokeWidth="5" strokeDasharray="72 28" strokeDashoffset="25" strokeLinecap="butt" />
-              <circle cx="21" cy="21" r="15.9" fill="none" stroke="#D97706" strokeWidth="5" strokeDasharray="21 79" strokeDashoffset="-47" strokeLinecap="butt" />
-              <circle cx="21" cy="21" r="15.9" fill="none" stroke="#DC2626" strokeWidth="5" strokeDasharray="7 93" strokeDashoffset="-68" strokeLinecap="butt" />
-              <text x="21" y="20.4" textAnchor="middle" fontSize="6.2" fontWeight="600" fill="#111827" fontFamily="Inter">72%</text>
+              <circle cx="21" cy="21" r="15.9" fill="none" stroke="#16A34A" strokeWidth="5" strokeDasharray={`${riskPct('low')} ${100-riskPct('low')}`} strokeDashoffset="25" strokeLinecap="butt" />
+              <text x="21" y="20.4" textAnchor="middle" fontSize="6.2" fontWeight="600" fill="#111827" fontFamily="Inter">{riskPct('low')}%</text>
               <text x="21" y="25.4" textAnchor="middle" fontSize="3.1" fill="#6B7280" fontFamily="Inter">low risk</text>
             </svg>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
-              {[['Low Risk', '72%', '#16A34A'], ['Medium Risk', '21%', '#D97706'], ['High Risk', '7%', '#DC2626']].map(
+              {[['Low Risk', `${riskPct('low')}%`, '#16A34A'], ['Medium Risk', `${riskPct('medium')}%`, '#D97706'], ['High Risk', `${riskPct('high')}%`, '#DC2626']].map(
                 ([label, pct, color]) => (
                   <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ width: 8, height: 8, borderRadius: 2, background: color }} />
@@ -149,7 +148,7 @@ export default function Overview({ data, transactions = [], agents = [], onNavig
             }}
           >
             <span className="ag-note">Autonomy rate</span>
-            <span style={{ fontSize: 12.5, fontWeight: 600 }}>93.2% settled without humans</span>
+            <span style={{ fontSize: 12.5, fontWeight: 600 }}>{data?.total ? Math.round((data.approved || 0) * 100 / data.total) : 0}% approved autonomously</span>
           </div>
         </div>
       </div>

@@ -4,15 +4,16 @@ import { Search } from '../components/Icons'
 
 const COLS = '140px 1.2fr 1.4fr 110px 100px 130px 70px'
 const TABS = ['All', 'Approved', 'Blocked', 'Pending Review']
-const FILTERS = ['Today ▾', 'Risk: All ▾', 'Agent: All ▾', 'Status: All ▾']
-
 const matches = (t, tab) =>
-  tab === 'All' || (tab === 'Pending Review' ? t.status === 'Review' : t.status === tab)
+  tab === 'All' || (tab === 'Pending Review' ? t.status === 'Review' : tab === 'Approved' ? ['Approved', 'Human Approved'].includes(t.status) : t.status === tab)
 
-const mapTx = (t) => ({ id: t.transaction_id, agent: t.agent_name || t.agent_id, merchant: t.merchant?.name, amount: new Intl.NumberFormat('en-IN', { style: 'currency', currency: t.amount?.currency || 'INR', maximumFractionDigits: 0 }).format((t.amount?.minor || 0) / 100), risk: (t.risk?.band || 'low').replace(/^./, x => x.toUpperCase()), status: t.decision === 'review' ? 'Review' : (t.decision || '').replace(/^./, x => x.toUpperCase()), time: t.created_at ? new Date(t.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—' })
-export default function Transactions({ transactions = [], onSearch, onOpenTx }) {
+const displayStatus = (t) => t.decision_state === 'approved_by_human' ? 'Human Approved' : t.decision_state === 'rejected_by_human' ? 'Rejected' : t.decision_state === 'expired' ? 'Expired' : t.decision === 'review' ? 'Review' : (t.decision || '').replace(/^./, x => x.toUpperCase())
+const mapTx = (t) => ({ id: t.transaction_id, agent: t.agent_name || t.agent_id, merchant: t.merchant?.name, amount: new Intl.NumberFormat('en-IN', { style: 'currency', currency: t.amount?.currency || 'INR', maximumFractionDigits: 0 }).format((t.amount?.minor || 0) / 100), risk: (t.risk?.band || 'low').replace(/^./, x => x.toUpperCase()), status: displayStatus(t), time: t.created_at ? new Date(t.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—' })
+export default function Transactions({ transactions = [], agents = [], onSearch, onOpenTx }) {
   const [tab, setTab] = useState('All')
   const [query, setQuery] = useState('')
+  const [filters, setFilters] = useState({ date: '', risk_band: '', agent_id: '', status: '' })
+  const apply = (key, value) => { const next = { ...filters, [key]: value }; setFilters(next); const params = { q: query, risk_band: next.risk_band, agent_id: next.agent_id, status: next.status }; if (next.date === 'today') params.from_date = new Date(new Date().setHours(0, 0, 0, 0)).toISOString(); onSearch(params) }
   const rows = transactions.map(mapTx)
   const visible = rows.filter((t) => matches(t, tab))
 
@@ -41,9 +42,10 @@ export default function Transactions({ transactions = [], onSearch, onOpenTx }) 
           <Search />
           <input placeholder="Search transaction ID, merchant or agent" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') onSearch({ q: query }) }} />
         </div>
-        {FILTERS.map((f) => (
-          <button key={f} className="ag-btn-filter">{f}</button>
-        ))}
+        <select className="ag-btn-filter" value={filters.date} onChange={(e) => apply('date', e.target.value)}><option value="">Any date</option><option value="today">Today</option></select>
+        <select className="ag-btn-filter" value={filters.risk_band} onChange={(e) => apply('risk_band', e.target.value)}><option value="">Risk: All</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select>
+        <select className="ag-btn-filter" value={filters.agent_id} onChange={(e) => apply('agent_id', e.target.value)}><option value="">Agent: All</option>{agents.map((a) => <option key={a.agent_id} value={a.agent_id}>{a.name}</option>)}</select>
+        <select className="ag-btn-filter" value={filters.status} onChange={(e) => apply('status', e.target.value)}><option value="">Status: All</option><option value="approved">Approved</option><option value="review_pending">Review pending</option><option value="approved_by_human">Human approved</option><option value="blocked">Blocked</option><option value="rejected_by_human">Rejected</option></select>
       </div>
 
       <div className="ag-table">

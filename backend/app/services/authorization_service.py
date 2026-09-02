@@ -26,7 +26,7 @@ async def _spend(workspace_id, agent_id):
     day = current.replace(hour=0, minute=0, second=0, microsecond=0)
     month = day.replace(day=1)
     pipeline = [{"$match": {"workspace_id": workspace_id, "agent_id": agent_id, "decision_state": {"$in": ["approved", "approved_by_human"]}, "created_at": {"$gte": month}}}, {"$group": {"_id": None, "monthly": {"$sum": "$amount.minor"}, "daily": {"$sum": {"$cond": [{"$gte": ["$created_at", day]}, "$amount.minor", 0]}}}}]
-    rows = await db.transactions.aggregate(pipeline).to_list(1)
+    rows = await (await db.transactions.aggregate(pipeline)).to_list(1)
     return rows[0] if rows else {"daily": 0, "monthly": 0}
 
 

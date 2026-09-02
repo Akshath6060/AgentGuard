@@ -47,7 +47,7 @@ npm install
 VITE_API_BASE_URL=http://localhost:8000 npm run dev
 ```
 
-Open `http://localhost:5173`. The seed login is `admin@agentguard.local` / `AgentGuard123!`. Seed-created agent credentials are printed exactly once. Re-running the seed does not reveal existing credentials.
+Open `http://localhost:5173`. The seed login is `demo@agentguard.app` / `AgentGuard123!`. Seed-created agent credentials are printed exactly once. Re-running the seed does not reveal existing credentials.
 
 For Atlas, set `MONGODB_URI` to the Atlas connection string and `MONGODB_DB_NAME=agentguard`. Never commit `.env`.
 

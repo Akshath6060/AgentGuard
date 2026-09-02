@@ -1,7 +1,10 @@
+import { useState } from 'react'
 import { RISK, AV, initials } from '../data'
 import { Check } from '../components/Icons'
 
 export default function Approvals({ approvals, onApprove, onReject, onView }) {
+  const [busy, setBusy] = useState(null)
+  const decide = async (approval, index, approved) => { setBusy(approval.approval_id); try { await (approved ? onApprove(index, approval) : onReject(index, approval)) } finally { setBusy(null) } }
   return (
     <div className="ag-rise" style={{ maxWidth: 1000 }}>
       <h1 className="ag-h1">Approval Center</h1>
@@ -56,11 +59,11 @@ export default function Approvals({ approvals, onApprove, onReject, onView }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
               <button className="ag-btn" style={{ color: '#4B5563' }} onClick={() => onView(a.tx)}>View analysis</button>
               <div style={{ flex: 1 }} />
-              {approval.allowed_actions?.includes('reject') && <button className="ag-btn ag-btn-danger" style={{ padding: '0 16px' }} onClick={() => onReject(i, a)}>
+              {approval.allowed_actions?.includes('reject') && <button disabled={busy === approval.approval_id} className="ag-btn ag-btn-danger" style={{ padding: '0 16px' }} onClick={() => decide(approval, i, false)}>
                 Reject
               </button>}
-              {approval.allowed_actions?.includes('approve') && <button className="ag-btn ag-btn-primary" style={{ padding: '0 16px' }} onClick={() => onApprove(i, a)}>
-                Approve Payment
+              {approval.allowed_actions?.includes('approve') && <button disabled={busy === approval.approval_id} className="ag-btn ag-btn-primary" style={{ padding: '0 16px' }} onClick={() => decide(approval, i, true)}>
+                {busy === approval.approval_id ? 'Processing…' : 'Approve Payment'}
               </button>}
             </div>
           </div>

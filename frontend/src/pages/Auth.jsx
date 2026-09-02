@@ -53,7 +53,7 @@ function Brand() {
 }
 
 function Login({ onSubmit }) {
-  const [email, setEmail] = useState('admin@agentguard.local')
+  const [email, setEmail] = useState('demo@agentguard.app')
   const [password, setPassword] = useState('AgentGuard123!')
   const [keepSignedIn, setKeepSignedIn] = useState(true)
   const [signingIn, setSigningIn] = useState(false)

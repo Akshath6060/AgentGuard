@@ -2,14 +2,14 @@ import { useState } from 'react'
 import { CATS, SECRULES, TYPES, STEPS, IND } from '../data'
 import { CheckBold } from './Icons'
 
-export default function AddAgentModal({ onClose, onCreate, policies = [] }) {
+export default function AddAgentModal({ onClose, onCreate }) {
   const [step, setStep] = useState(0)
   const [type, setType] = useState('Travel')
   const [cats, setCats] = useState(['Flights', 'Hotels', 'Transportation'])
   const [rules, setRules] = useState([0, 1, 2, 3])
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
-  const [policyId, setPolicyId] = useState(policies[0]?.policy_id || '')
+  const [limits, setLimits] = useState({ per_transaction: '15000', daily: '30000', monthly: '50000' })
 
   const toggleCat = (label) =>
     setCats((c) => (c.includes(label) ? c.filter((x) => x !== label) : c.concat(label)))
@@ -17,7 +17,10 @@ export default function AddAgentModal({ onClose, onCreate, policies = [] }) {
     setRules((r) => (r.includes(i) ? r.filter((x) => x !== i) : r.concat(i)))
 
   const next = () => {
-    if (step === 4) onCreate({ name, description, type: type.toLowerCase(), policy_id: policyId || null })
+    if (step === 4) {
+      const categoryMap = { Flights: 'airline', Hotels: 'hotel', Transportation: 'transport', 'Food & Dining': 'food', Software: 'software', Advertising: 'advertising', Electronics: 'electronics', Cryptocurrency: 'cryptocurrency' }
+      onCreate({ name, description, type: type.toLowerCase(), policy_rules: { limits: Object.fromEntries(Object.entries(limits).map(([key, value]) => [key, Math.round(Number(value.replaceAll(',', '')) * 100)])), categories: { allowed: cats.map((c) => categoryMap[c] || c.toLowerCase()), blocked: rules.includes(3) ? ['cryptocurrency'] : [] }, merchant_rules: { unknown: rules.includes(0) ? 'review' : 'allow' }, international: { allowed: !rules.includes(2) }, repeated_failures: { threshold: 3, action: rules.includes(4) ? 'block' : 'review' } } })
+    }
     else setStep(step + 1)
   }
 
@@ -25,9 +28,9 @@ export default function AddAgentModal({ onClose, onCreate, policies = [] }) {
     { label: 'Agent name', value: name },
     { label: 'Type', value: type },
     { label: 'Allowed categories', value: cats.length + ' selected' },
-    { label: 'Single transaction limit', value: '₹15,000' },
-    { label: 'Daily limit', value: '₹30,000' },
-    { label: 'Monthly limit', value: '₹50,000' },
+    { label: 'Single transaction limit', value: `₹${Number(limits.per_transaction).toLocaleString('en-IN')}` },
+    { label: 'Daily limit', value: `₹${Number(limits.daily).toLocaleString('en-IN')}` },
+    { label: 'Monthly limit', value: `₹${Number(limits.monthly).toLocaleString('en-IN')}` },
     { label: 'Security rules', value: rules.length + ' of 5 enabled' },
   ]
 
@@ -58,13 +61,6 @@ export default function AddAgentModal({ onClose, onCreate, policies = [] }) {
               <div>
                 <label className="ag-label">Description</label>
                 <input className="ag-input ag-input-sm" placeholder="What does this agent do?" value={description} onChange={(e) => setDescription(e.target.value)} />
-              </div>
-              <div>
-                <label className="ag-label">Policy</label>
-                <select className="ag-input ag-input-sm" value={policyId} onChange={(e) => setPolicyId(e.target.value)}>
-                  <option value="">No policy</option>
-                  {policies.map((p) => <option key={`${p.policy_id}-${p.version}`} value={p.policy_id}>{p.name} v{p.version}</option>)}
-                </select>
               </div>
               <div>
                 <label className="ag-label" style={{ marginBottom: 8 }}>Agent type</label>
@@ -131,13 +127,13 @@ export default function AddAgentModal({ onClose, onCreate, policies = [] }) {
           {step === 2 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {[
-                ['Single transaction limit', '₹15,000'],
-                ['Daily limit', '₹30,000'],
-                ['Monthly limit', '₹50,000'],
-              ].map(([label, value]) => (
-                <div key={label}>
+                ['Single transaction limit', 'per_transaction'],
+                ['Daily limit', 'daily'],
+                ['Monthly limit', 'monthly'],
+              ].map(([label, key]) => (
+                <div key={key}>
                   <label className="ag-label">{label}</label>
-                  <input className="ag-input ag-input-sm" defaultValue={value} />
+                  <input className="ag-input ag-input-sm" inputMode="numeric" value={limits[key]} onChange={(e) => setLimits({ ...limits, [key]: e.target.value.replace(/[^0-9]/g, '') })} />
                 </div>
               ))}
             </div>

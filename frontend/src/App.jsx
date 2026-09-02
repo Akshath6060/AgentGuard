@@ -26,6 +26,7 @@ export default function App() {
   const [page, setPage] = useState('overview')
   const [workspace, setWorkspace] = useState(null)
   const [workspaces, setWorkspaces] = useState([])
+  const [user, setUser] = useState(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [txId, setTxId] = useState('AGTX-40290')
   const [approvals, setApprovals] = useState([])
@@ -66,6 +67,7 @@ export default function App() {
     try {
       const result = await api.login(email, password)
       setSession(result.access_token)
+      setUser(result.user)
       setWorkspaces(result.workspaces.map((w) => ({ ...w, initials: w.name.slice(0, 2).toUpperCase(), meta: `${w.environment} workspace`, env: w.environment === 'live' ? 'Live' : 'Test', bg: '#EEF2FF', fg: '#4F46E5', envBg: '#F3F4F6', envFg: '#6B7280' })))
       setScreen('workspace')
     } catch (e) { say(e.message, '#DC2626'); throw e }
@@ -94,11 +96,11 @@ export default function App() {
   }
 
   const pages = {
-    overview: <Overview data={dashboard} transactions={transactions} agents={agents} onNavigate={setPage} onOpenTx={openTx} onAddAgent={openAddAgent} />,
+    overview: <Overview data={dashboard} transactions={transactions} agents={agents} onRange={async (range) => setDashboard(await api.dashboard(range))} onNavigate={setPage} onOpenTx={openTx} onAddAgent={openAddAgent} />,
     agents: <Agents agents={agents} onOpenAgent={(id) => { setAgentId(id); setPage('agentProfile') }} onAddAgent={openAddAgent} />,
     agentProfile: <AgentProfile agentId={agentId} onBack={() => setPage('agents')} onToast={say} onChanged={refresh} />,
-    transactions: <Transactions transactions={transactions} onSearch={async (params) => setTransactions((await api.transactions(params)).items)} onOpenTx={openTx} />,
-    detail: <TransactionDetail txId={txId} onBack={() => setPage('transactions')} onToast={say} />,
+    transactions: <Transactions transactions={transactions} agents={agents} onSearch={async (params) => setTransactions((await api.transactions(params)).items)} onOpenTx={openTx} />,
+    detail: <TransactionDetail txId={txId} onBack={() => setPage('transactions')} onToast={say} onChanged={refresh} />,
     approvals: (
       <Approvals
         approvals={approvals}
@@ -108,7 +110,7 @@ export default function App() {
       />
     ),
     policies: <Policies policies={policies} onCreate={() => setPolicyOpen(true)} />,
-    risk: <RiskCenter />,
+    risk: <RiskCenter data={dashboard} />,
     audit: <AuditLogs events={auditEvents} />,
     developers: <Developers onToast={say} />,
     settings: <Settings workspace={workspace} onToast={say} />,
@@ -121,6 +123,7 @@ export default function App() {
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
         <Topbar
           title={PAGE_TITLES[page] || 'AgentGuard'}
+          user={{ ...user, role: workspace.role }}
           menuOpen={menuOpen}
           onToggleMenu={() => setMenuOpen((v) => !v)}
           onCloseMenu={() => setMenuOpen(false)}
@@ -128,6 +131,8 @@ export default function App() {
             setPage(p)
             setMenuOpen(false)
           }}
+          onSearch={async (query) => { try { setTransactions((await api.transactions({ q: query })).items); setPage('transactions') } catch (e) { say(e.message, '#DC2626') } }}
+          onNotifications={() => setPage('approvals')}
           onSwitchWorkspace={() => {
             setScreen('workspace')
             setMenuOpen(false)
@@ -156,9 +161,8 @@ export default function App() {
       {agentModalOpen && (
         <AddAgentModal
           onClose={() => setAgentModalOpen(false)}
-          policies={policies.filter((p) => p.status === 'active')}
           onCreate={async (body) => {
-            try { await api.createAgent(body); setAgentModalOpen(false); await refresh(); say('Agent created successfully') } catch (e) { say(e.message, '#DC2626') }
+            try { const { policy_rules, ...agent } = body; const policy = await api.createPolicy({ name: `${agent.name} Policy`, rules: policy_rules }); await api.publishPolicy(policy.policy_id); await api.createAgent({ ...agent, policy_id: policy.policy_id }); setAgentModalOpen(false); await refresh(); say('Agent and policy created successfully') } catch (e) { say(e.message, '#DC2626') }
           }}
         />
       )}

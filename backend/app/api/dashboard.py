@@ -15,9 +15,13 @@ async def overview(range:str="7d",user=Depends(current_user)):
         "blocked":{"$sum":{"$cond":[{"$eq":["$decision","blocked"]},1,0]}},
         "approved_spend":{"$sum":{"$cond":[{"$in":["$decision_state",["approved","approved_by_human"]]},"$amount.minor",0]}},
     }
-    totals=await db.transactions.aggregate([{"$match":match},{"$group":group}]).to_list(1)
-    risk=await db.transactions.aggregate([{"$match":match},{"$group":{"_id":"$risk.band","count":{"$sum":1}}}]).to_list(10)
-    trend=await db.transactions.aggregate([{"$match":match},{"$group":{"_id":{"$dateToString":{"format":"%Y-%m-%d","date":"$created_at"}},"amount":{"$sum":{"$cond":[{"$in":["$decision_state",["approved","approved_by_human"]]},"$amount.minor",0]}},"count":{"$sum":1}}},{"$sort":{"_id":1}}]).to_list(days)
+    totals=await (await db.transactions.aggregate([{"$match":match},{"$group":group}])).to_list(1)
+    risk=await (await db.transactions.aggregate([{"$match":match},{"$group":{"_id":"$risk.band","count":{"$sum":1}}}])).to_list(10)
+    trend=await (await db.transactions.aggregate([{"$match":match},{"$group":{"_id":{"$dateToString":{"format":"%Y-%m-%d","date":"$created_at"}},"amount":{"$sum":{"$cond":[{"$in":["$decision_state",["approved","approved_by_human"]]},"$amount.minor",0]}},"count":{"$sum":1}}},{"$sort":{"_id":1}}])).to_list(days)
+    reasons=await (await db.transactions.aggregate([{"$match":match},{"$unwind":"$reason_codes"},{"$group":{"_id":"$reason_codes","count":{"$sum":1}}},{"$sort":{"count":-1}},{"$limit":6}])).to_list(6)
+    risk_trend=await (await db.transactions.aggregate([{"$match":match},{"$group":{"_id":{"date":{"$dateToString":{"format":"%Y-%m-%d","date":"$created_at"}},"band":"$risk.band"},"count":{"$sum":1}}},{"$sort":{"_id.date":1}}])).to_list(days*3)
     recent=await db.audit_events.find({"workspace_id":user["workspace_id"]}).sort("created_at",-1).limit(8).to_list(8)
     base=totals[0] if totals else {"total":0,"approved":0,"review":0,"blocked":0,"approved_spend":0}
-    return {**clean(base),"currency":"INR","risk_distribution":{r["_id"]:r["count"] for r in risk if r["_id"]},"approval_pending":await db.approvals.count_documents({"workspace_id":user["workspace_id"],"status":"pending"}),"recent_activity":clean(recent),"spend_trend":[{"date":x["_id"],"amount_minor":x["amount"],"count":x["count"]} for x in trend]}
+    risk_days={}
+    for row in risk_trend:risk_days.setdefault(row["_id"]["date"],{"date":row["_id"]["date"],"low":0,"medium":0,"high":0})[row["_id"]["band"]]=row["count"]
+    return {**clean(base),"currency":"INR","risk_distribution":{r["_id"]:r["count"] for r in risk if r["_id"]},"risk_trend":list(risk_days.values()),"reason_distribution":[{"code":x["_id"],"count":x["count"]} for x in reasons],"approval_pending":await db.approvals.count_documents({"workspace_id":user["workspace_id"],"status":"pending"}),"recent_activity":clean(recent),"spend_trend":[{"date":x["_id"],"amount_minor":x["amount"],"count":x["count"]} for x in trend]}

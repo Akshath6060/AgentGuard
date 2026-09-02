@@ -1,26 +1,15 @@
 import { useEffect, useState } from 'react'
-import { Check, Cross, DocEmpty } from '../components/Icons'
+import { Check, Cross } from '../components/Icons'
 import { api } from '../api/client'
 
 const TABS = ['Overview', 'Transactions', 'Permissions', 'Policies', 'Logs']
-const RECENT = [
-  { text: '₹8,450 → IndiGo approved', time: '2 sec ago', color: '#16A34A' },
-  { text: '₹18,700 → MakeMyTrip sent for approval', time: '2 min ago', color: '#D97706' },
-  { text: '₹2,300 → Uber approved', time: '1 hr ago', color: '#16A34A' },
-  { text: '₹9,900 → Unknown merchant blocked', time: '4 hrs ago', color: '#DC2626' },
-]
-
-const SUMMARY = [
-  ['Monthly Limit', '₹50,000'],
-  ['Spent', '₹18,700'],
-  ['Remaining', '₹31,300', '#16A34A'],
-  ['Transaction Limit', '₹15,000'],
-]
-
 export default function AgentProfile({ agentId, onBack, onToast, onChanged }) {
   const [tab, setTab] = useState('Overview')
   const [agent, setAgent] = useState(null)
-  useEffect(() => { if (agentId) api.agent(agentId).then(setAgent).catch((e) => onToast(e.message, '#DC2626')) }, [agentId, onToast])
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState({ name: '', description: '' })
+  const [newSecret, setNewSecret] = useState('')
+  useEffect(() => { if (agentId) api.agent(agentId).then((value) => { setAgent(value); setDraft({ name: value.name, description: value.description || '' }) }).catch((e) => onToast(e.message, '#DC2626')) }, [agentId, onToast])
   if (!agent) return <div className="ag-card ag-card-pad">Loading agent…</div>
   const allowed = agent.policy?.rules?.categories?.allowed || []
   const restricted = agent.policy?.rules?.categories?.blocked || []
@@ -32,6 +21,8 @@ export default function AgentProfile({ agentId, onBack, onToast, onChanged }) {
     { label: 'Monthly spending limit', value: format(limits.monthly), color: '#111827' },
     { label: 'International payments', value: agent.policy?.rules?.international?.allowed ? 'Enabled' : 'Disabled', color: agent.policy?.rules?.international?.allowed ? '#16A34A' : '#DC2626' },
   ]
+  const summary = [['Monthly Limit', format(limits.monthly)], ['Spent', format(agent.spend?.monthly)], ['Remaining', format(agent.spend?.remaining), '#16A34A'], ['Transaction Limit', format(limits.per_transaction)]]
+  const recent = (agent.recent_transactions || []).slice(0, 5).map((tx) => ({ text: `${format(tx.amount?.minor)} → ${tx.merchant?.name} ${tx.decision}`, time: new Date(tx.created_at).toLocaleString(), color: tx.decision === 'approved' ? '#16A34A' : tx.decision === 'blocked' ? '#DC2626' : '#D97706' }))
 
   return (
     <div className="ag-rise">
@@ -47,20 +38,24 @@ export default function AgentProfile({ agentId, onBack, onToast, onChanged }) {
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-              <h1 style={{ margin: 0, fontSize: 26, fontWeight: 600, letterSpacing: '-0.02em' }}>{agent.name}</h1>
+              {editing ? <input className="ag-input ag-input-sm" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} /> : <h1 style={{ margin: 0, fontSize: 26, fontWeight: 600, letterSpacing: '-0.02em' }}>{agent.name}</h1>}
               <span className="ag-badge" style={{ background: agent.status === 'active' ? '#DCFCE7' : '#F3F4F6', color: agent.status === 'active' ? '#15803D' : '#6B7280' }}>{agent.status}</span>
             </div>
-            <p style={{ margin: '0 0 4px', fontSize: 14, color: '#6B7280' }}>{agent.description}</p>
+            {editing ? <input className="ag-input ag-input-sm" value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })} /> : <p style={{ margin: '0 0 4px', fontSize: 14, color: '#6B7280' }}>{agent.description}</p>}
             <span className="ag-mono" style={{ fontSize: 12, color: '#9CA3AF' }}>{agent.agent_id}</span>
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="ag-btn" onClick={async () => { try { const updated = await api.agentState(agent.agent_id, agent.status === 'active' ? 'pause' : 'resume'); setAgent({ ...agent, status: updated.status }); await onChanged(); onToast(`Agent ${updated.status}`) } catch (e) { onToast(e.message, '#DC2626') } }}>{agent.status === 'active' ? 'Pause Agent' : 'Resume Agent'}</button>
+          <button className="ag-btn" onClick={async () => { if (!editing) return setEditing(true); try { const updated = await api.updateAgent(agent.agent_id, draft); setAgent({ ...agent, ...updated }); setEditing(false); await onChanged(); onToast('Agent updated') } catch (e) { onToast(e.message, '#DC2626') } }}>{editing ? 'Save Agent' : 'Edit Agent'}</button>
+          <button className="ag-btn ag-btn-primary" onClick={async () => { try { const credential = await api.rotateAgentCredential(agent.agent_id); setNewSecret(credential.secret); onToast('Credential rotated — copy it now') } catch (e) { onToast(e.message, '#DC2626') } }}>Rotate Credential</button>
         </div>
       </div>
 
+      {newSecret && <div className="ag-card ag-card-pad" style={{ marginBottom: 16, background: '#FEF3C7' }}><strong>New agent credential — shown once</strong><div className="ag-mono" style={{ marginTop: 8, wordBreak: 'break-all' }}>{newSecret}</div><button className="ag-btn ag-btn-xs" style={{ marginTop: 10 }} onClick={async () => { await navigator.clipboard.writeText(newSecret); onToast('Credential copied') }}>Copy credential</button></div>}
+
       <div className="ag-grid-4" style={{ marginBottom: 16 }}>
-        {SUMMARY.map(([label, value, color]) => (
+        {summary.map(([label, value, color]) => (
           <div key={label} className="ag-card ag-stat">
             <div style={{ fontSize: 12.5, color: '#6B7280', marginBottom: 7 }}>{label}</div>
             <span style={{ fontSize: 22, fontWeight: 600, color }}>{value}</span>
@@ -71,10 +66,10 @@ export default function AgentProfile({ agentId, onBack, onToast, onChanged }) {
       <div className="ag-card ag-card-pad" style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
           <span style={{ fontSize: 13.5, fontWeight: 500 }}>Monthly spending</span>
-          <span style={{ fontSize: 13, color: '#6B7280' }}>₹18,700 of ₹50,000 · 37%</span>
+          <span style={{ fontSize: 13, color: '#6B7280' }}>{format(agent.spend?.monthly)} of {format(limits.monthly)} · {agent.spend?.percent || 0}%</span>
         </div>
         <div style={{ height: 8, background: '#F3F4F6', borderRadius: 5, overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: '37%', background: '#4F46E5', borderRadius: 5 }} />
+          <div style={{ height: '100%', width: `${agent.spend?.percent || 0}%`, background: '#4F46E5', borderRadius: 5 }} />
         </div>
       </div>
 
@@ -151,7 +146,7 @@ export default function AgentProfile({ agentId, onBack, onToast, onChanged }) {
 
             <div className="ag-card ag-card-pad">
               <h2 className="ag-h2" style={{ marginBottom: 14 }}>Recent decisions</h2>
-              {RECENT.map((r) => (
+              {recent.map((r) => (
                 <div
                   key={r.text}
                   style={{
@@ -167,23 +162,10 @@ export default function AgentProfile({ agentId, onBack, onToast, onChanged }) {
             </div>
           </div>
         </div>
-      ) : (
-        <div
-          className="ag-card"
-          style={{ padding: 48, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}
-        >
-          <div
-            className="ag-avatar"
-            style={{ width: 42, height: 42, borderRadius: 10, background: '#F3F4F6' }}
-          >
-            <DocEmpty />
-          </div>
-          <span style={{ fontSize: 14, fontWeight: 500 }}>{tab} view</span>
-          <span style={{ fontSize: 13, color: '#6B7280' }}>
-            Not part of this mockup pass — the Overview tab carries the demo content.
-          </span>
-        </div>
-      )}
+      ) : tab === 'Transactions' ? <div className="ag-card ag-card-pad">{recent.map((r) => <div key={r.text+r.time} className="ag-divider-row" style={{ display: 'flex', justifyContent: 'space-between' }}><span>{r.text}</span><span className="ag-note">{r.time}</span></div>)}</div>
+        : tab === 'Policies' ? <div className="ag-card ag-card-pad"><h2 className="ag-h2">{agent.policy?.name || 'No policy assigned'}</h2><p className="ag-note">{agent.policy ? `Version ${agent.policy.version} · ${agent.policy.status}` : 'Assign an active policy to enforce authorizations.'}</p></div>
+          : tab === 'Permissions' ? <div className="ag-card ag-card-pad"><h2 className="ag-h2">Effective permissions</h2><p className="ag-note">Allowed: {allowed.join(', ') || 'None'}</p><p className="ag-note">Blocked: {restricted.join(', ') || 'None'}</p></div>
+            : <div className="ag-card ag-card-pad"><p className="ag-note">Agent activity is available in the workspace Audit Logs, filtered by agent ID {agent.agent_id}.</p></div>}
     </div>
   )
 }

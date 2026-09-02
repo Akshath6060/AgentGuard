@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Razorpay } from '../components/Icons'
 import { api } from '../api/client'
 
 export default function Settings({ workspace, onToast = () => {} }) {
   const [name, setName] = useState(workspace.name)
   const [currency, setCurrency] = useState(workspace.default_currency || 'INR')
+  const [provider, setProvider] = useState({ provider: 'razorpay', status: 'loading' })
+  useEffect(() => { api.workspace().then((data) => { setName(data.name); setCurrency(data.default_currency); setProvider(data.provider_connection) }).catch((e) => onToast(e.message, '#DC2626')) }, [workspace.workspace_id, onToast])
   return (
     <div className="ag-rise" style={{ maxWidth: 760 }}>
       <h1 className="ag-h1">Settings</h1>
@@ -39,9 +41,9 @@ export default function Settings({ workspace, onToast = () => {} }) {
           <Razorpay size={32} radius={7} font={14} />
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 13.5, fontWeight: 500 }}>Razorpay</div>
-            <span className="ag-note">Connected · acc_NxRa8821kq</span>
+            <span className="ag-note">{provider.status === 'connected' ? 'Connected in test mode' : provider.status === 'mock' ? 'Local mock mode' : provider.status}</span>
           </div>
-          <span className="ag-badge" style={{ background: '#DCFCE7', color: '#15803D' }}>Live</span>
+          <span className="ag-badge" style={{ background: '#DCFCE7', color: '#15803D' }}>{provider.environment || 'Test'}</span>
         </div>
       </div>
     </div>

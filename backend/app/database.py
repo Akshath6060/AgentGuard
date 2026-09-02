@@ -2,7 +2,7 @@ from pymongo import ASCENDING, DESCENDING, AsyncMongoClient
 from .config import get_settings
 
 settings = get_settings()
-client = AsyncMongoClient(settings.mongodb_uri)
+client = AsyncMongoClient(settings.mongodb_uri, tz_aware=True)
 db = client[settings.mongodb_db_name]
 
 
@@ -25,4 +25,3 @@ async def ensure_indexes(database=None):
     await d.api_keys.create_index("prefix", unique=True)
     await d.webhook_events.create_index([("provider", ASCENDING), ("event_id", ASCENDING)], unique=True)
     await d.memberships.create_index([("user_id", ASCENDING), ("workspace_id", ASCENDING)], unique=True)
-

@@ -15,7 +15,12 @@ settings=get_settings()
 async def lifespan(app):
     await ensure_indexes();yield;await client.close()
 app=FastAPI(title="AgentGuard API",version="1.0.0",lifespan=lifespan)
-app.add_middleware(CORSMiddleware,allow_origins=[settings.frontend_url],allow_credentials=True,allow_methods=["GET","POST","PATCH","DELETE","OPTIONS"],allow_headers=["Authorization","Content-Type","X-Workspace-ID","X-Agent-Key","X-Razorpay-Signature"])
+allowed_origins={settings.frontend_url.rstrip("/")}
+if settings.frontend_url.startswith("http://localhost:"):
+    allowed_origins.add(settings.frontend_url.replace("http://localhost:","http://127.0.0.1:").rstrip("/"))
+elif settings.frontend_url.startswith("http://127.0.0.1:"):
+    allowed_origins.add(settings.frontend_url.replace("http://127.0.0.1:","http://localhost:").rstrip("/"))
+app.add_middleware(CORSMiddleware,allow_origins=sorted(allowed_origins),allow_credentials=True,allow_methods=["GET","POST","PATCH","DELETE","OPTIONS"],allow_headers=["Authorization","Content-Type","X-Workspace-ID","X-Agent-Key","X-Razorpay-Signature"])
 @app.middleware("http")
 async def request_context(request:Request,call_next):
     request.state.request_id=public_id("req",12);start=perf_counter()

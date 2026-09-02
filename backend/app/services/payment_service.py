@@ -26,7 +26,7 @@ async def initiate(transaction_id, workspace_id, actor, request_id):
             await audit(workspace_id, {"type": "system", "id": "razorpay"}, "payment.succeeded", "transaction", transaction_id, request_id, {"provider_order_id": order["id"]})
         return payment
     except Exception:
-        await db.transactions.update_one({"_id": tx["_id"]}, {"$set": {"payment.status": "failed", "updated_at": now()}})
+        payment={"provider":"razorpay","status":"failed","failure_code":"PROVIDER_REQUEST_FAILED","updated_at":now()}
+        await db.transactions.update_one({"_id": tx["_id"]}, {"$set": {"payment":payment, "updated_at": now()}})
         await audit(workspace_id, {"type": "system", "id": "razorpay"}, "payment.failed", "transaction", transaction_id, request_id)
-        raise HTTPException(502, "Payment provider request failed")
-
+        return payment

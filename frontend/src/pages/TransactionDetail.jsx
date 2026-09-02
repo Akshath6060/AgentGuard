@@ -6,7 +6,7 @@ import { api } from '../api/client'
 const RING = 2 * Math.PI * 16.5
 const PIPE_LABELS = ['Agent Request', 'Intent Analysis', 'Policy Check', 'Risk Analysis', 'Payment Decision']
 
-export default function TransactionDetail({ txId, onBack, onToast }) {
+export default function TransactionDetail({ txId, onBack, onToast, onChanged }) {
   const [pipe, setPipe] = useState(0)
   const [raw, setRaw] = useState(null)
   const [error, setError] = useState('')
@@ -24,6 +24,17 @@ export default function TransactionDetail({ txId, onBack, onToast }) {
         return p + 1
       })
     }, 260)
+  }
+  const decide = async (decision) => {
+    try {
+      const queue = await api.approvals()
+      const approval = queue.items.find((item) => item.transaction_id === txId)
+      if (!approval) throw new Error('Pending approval not found')
+      await api.decide(approval.approval_id, decision, approval.version)
+      setRaw(await api.transaction(txId))
+      await onChanged()
+      onToast(decision === 'approve' ? 'Payment approved' : 'Transaction rejected', decision === 'approve' ? '#16A34A' : '#DC2626')
+    } catch (e) { onToast(e.message, '#DC2626') }
   }
 
   useEffect(() => {
@@ -225,27 +236,20 @@ export default function TransactionDetail({ txId, onBack, onToast }) {
           {raw.allowed_actions?.some((a) => ['approve', 'reject'].includes(a)) && <div className="ag-card ag-card-pad">
             <h2 className="ag-h2" style={{ marginBottom: 12 }}>Actions</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-              <button
+              {raw.allowed_actions?.includes('approve') && <button
                 className="ag-btn ag-btn-primary"
                 style={{ height: 40, fontSize: 13.5 }}
-                onClick={() => onToast('Use the Approval Center to record this decision')}
+                onClick={() => decide('approve')}
               >
                 Approve Once
-              </button>
-              <button
+              </button>}
+              {raw.allowed_actions?.includes('reject') && <button
                 className="ag-btn ag-btn-danger"
                 style={{ height: 40, fontSize: 13.5 }}
-                onClick={() => onToast('Transaction rejected', '#DC2626')}
+                onClick={() => decide('reject')}
               >
                 Reject Transaction
-              </button>
-              <button
-                className="ag-btn"
-                style={{ height: 40, fontSize: 13.5, color: '#4B5563' }}
-                onClick={() => onToast('Merchant added to allowlist')}
-              >
-                Add Merchant to Allowlist
-              </button>
+              </button>}
             </div>
           </div>}
 
