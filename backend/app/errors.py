@@ -1,7 +1,10 @@
+import logging
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException
+
+logger = logging.getLogger("agentguard.api")
 
 
 def message_code(status, detail):
@@ -16,3 +19,11 @@ async def http_error(request: Request, exc: HTTPException):
 
 async def validation_error(request: Request, exc: RequestValidationError):
     return JSONResponse({"error": {"code": "VALIDATION_ERROR", "message": "Request validation failed", "details": exc.errors(), "request_id": request.state.request_id}}, status_code=422)
+
+
+async def unexpected_error(request: Request, exc: Exception):
+    logger.exception("Unhandled request error", extra={"request_id": getattr(request.state, "request_id", None)})
+    return JSONResponse(
+        {"error": {"code": "INTERNAL_ERROR", "message": "An unexpected error occurred", "request_id": getattr(request.state, "request_id", None)}},
+        status_code=500,
+    )

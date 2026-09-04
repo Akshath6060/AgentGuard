@@ -1,4 +1,5 @@
 from datetime import timedelta
+import secrets
 import bcrypt
 import jwt
 from fastapi import Depends, Header, HTTPException, Request
@@ -25,15 +26,19 @@ def verify_password(password: str, hashed: str) -> bool:
 
 
 def create_token(user_id: str) -> str:
-    exp = now() + timedelta(minutes=settings.jwt_expire_minutes)
-    return jwt.encode({"sub": user_id, "exp": exp}, settings.jwt_secret, algorithm=settings.jwt_algorithm)
+    issued = now()
+    exp = issued + timedelta(minutes=settings.jwt_expire_minutes)
+    claims = {"sub": user_id, "iat": issued, "exp": exp, "jti": secrets.token_urlsafe(16), "type": "access", "iss": settings.jwt_issuer, "aud": settings.jwt_audience}
+    return jwt.encode(claims, settings.jwt_secret, algorithm=settings.jwt_algorithm)
 
 
 async def current_user(request: Request, authorization: str | None = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(401, "Authentication required")
     try:
-        payload = jwt.decode(authorization[7:], settings.jwt_secret, algorithms=[settings.jwt_algorithm])
+        payload = jwt.decode(authorization[7:], settings.jwt_secret, algorithms=[settings.jwt_algorithm], issuer=settings.jwt_issuer, audience=settings.jwt_audience)
+        if payload.get("type") != "access" or not payload.get("sub"):
+            raise InvalidTokenError("Invalid token type")
     except InvalidTokenError as exc:
         raise HTTPException(401, "Invalid or expired token") from exc
     user = await db.users.find_one({"user_id": payload.get("sub"), "status": "active"})
@@ -62,4 +67,3 @@ async def agent_identity(x_agent_key: str | None = Header(None)):
         raise HTTPException(401, "Invalid or revoked agent credential")
     await db.agent_credentials.update_one({"_id": credential["_id"]}, {"$set": {"last_used_at": now()}})
     return credential
-

@@ -52,9 +52,9 @@ function Brand() {
   )
 }
 
-function Login({ onSubmit }) {
-  const [email, setEmail] = useState('demo@agentguard.app')
-  const [password, setPassword] = useState('AgentGuard123!')
+function Login({ onSubmit, onRegister }) {
+  const [email, setEmail] = useState(import.meta.env.DEV ? 'demo@agentguard.app' : '')
+  const [password, setPassword] = useState(import.meta.env.DEV ? 'AgentGuard123!' : '')
   const [keepSignedIn, setKeepSignedIn] = useState(true)
   const [signingIn, setSigningIn] = useState(false)
 
@@ -110,13 +110,37 @@ function Login({ onSubmit }) {
         <span style={{ flex: 1, height: 1, background: '#E5E7EB' }} />
       </div>
 
-      <button className="ag-btn" style={{ width: '100%', height: 44, fontSize: 13.5 }} onClick={submit}>
-        Continue with SSO
+      <button className="ag-btn" style={{ width: '100%', height: 44, fontSize: 13.5 }} onClick={onRegister}>
+        Create an AgentGuard account
       </button>
 
-      <p style={{ margin: '22px 0 0', fontSize: 12.5, color: '#9CA3AF', textAlign: 'center' }}>
-        Demo credentials are prefilled after running the seed script.
-      </p>
+      {import.meta.env.DEV && <p style={{ margin: '22px 0 0', fontSize: 12.5, color: '#9CA3AF', textAlign: 'center' }}>Demo credentials are prefilled after running the seed script.</p>}
+    </div>
+  )
+}
+
+function Register({ onSubmit, onBack }) {
+  const [form, setForm] = useState({ name: '', email: '', password: '', workspace_name: '' })
+  const [busy, setBusy] = useState(false)
+  const update = (key, value) => setForm((current) => ({ ...current, [key]: value }))
+  const submit = async () => {
+    setBusy(true)
+    try { await onSubmit(form) } finally { setBusy(false) }
+  }
+  return (
+    <div className="ag-rise">
+      <h2 style={{ margin: '0 0 6px', fontSize: 24, fontWeight: 600, letterSpacing: '-0.02em' }}>Create your account</h2>
+      <p style={{ margin: '0 0 24px', fontSize: 13.5, color: '#6B7280' }}>Your first workspace will be created automatically.</p>
+      <label className="ag-label">Full name</label>
+      <input className="ag-input" style={{ marginBottom: 13 }} value={form.name} onChange={(e) => update('name', e.target.value)} placeholder="Alex Morgan" />
+      <label className="ag-label">Work email</label>
+      <input className="ag-input" type="email" style={{ marginBottom: 13 }} value={form.email} onChange={(e) => update('email', e.target.value)} placeholder="alex@company.com" />
+      <label className="ag-label">Password</label>
+      <input className="ag-input" type="password" style={{ marginBottom: 13 }} value={form.password} onChange={(e) => update('password', e.target.value)} placeholder="At least 8 characters" />
+      <label className="ag-label">Workspace name</label>
+      <input className="ag-input" value={form.workspace_name} onChange={(e) => update('workspace_name', e.target.value)} placeholder="Acme Operations" />
+      <button disabled={busy} className="ag-btn ag-btn-primary" style={{ width: '100%', height: 44, fontSize: 14, marginTop: 20 }} onClick={submit}>{busy ? 'Creating account…' : 'Create account'}</button>
+      <button className="ag-btn" style={{ width: '100%', height: 44, fontSize: 13.5, marginTop: 10 }} onClick={onBack}>Back to sign in</button>
     </div>
   )
 }
@@ -195,13 +219,14 @@ function WorkspacePicker({ onEnter, onBack, workspaces }) {
   )
 }
 
-export default function Auth({ screen, onScreen, onEnterWorkspace, onLogin, workspaces = [] }) {
+export default function Auth({ screen, onScreen, onEnterWorkspace, onLogin, onRegister, workspaces = [] }) {
   return (
     <div className="ag-auth-shell" style={{ display: 'flex', minHeight: '100vh', background: '#F7F8FA' }}>
       <Brand />
       <div className="ag-auth-panel" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
         <div style={{ width: '100%', maxWidth: 380 }}>
-          {screen === 'login' && <Login onSubmit={onLogin} />}
+          {screen === 'login' && <Login onSubmit={onLogin} onRegister={() => onScreen('register')} />}
+          {screen === 'register' && <Register onSubmit={onRegister} onBack={() => onScreen('login')} />}
           {screen === 'verify' && <Verify onSubmit={() => onScreen('workspace')} onBack={() => onScreen('login')} />}
           {screen === 'workspace' && <WorkspacePicker workspaces={workspaces} onEnter={onEnterWorkspace} onBack={() => onScreen('login')} />}
         </div>

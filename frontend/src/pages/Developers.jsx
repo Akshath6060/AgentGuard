@@ -26,7 +26,7 @@ export default function Developers({ onToast }) {
   const [keys, setKeys] = useState([])
   const [newSecret, setNewSecret] = useState('')
   const load = () => api.keys().then((r) => setKeys(r.items)).catch((e) => onToast(e.message, '#DC2626'))
-  useEffect(load, [])
+  useEffect(() => { load() }, [])
   const create = async () => { try { const key = await api.createKey(); setNewSecret(key.secret); await load(); onToast('New test key generated — copy it now') } catch (e) { onToast(e.message, '#DC2626') } }
   const revoke = async (id) => { try { await api.revokeKey(id); await load(); onToast('API key revoked', '#DC2626') } catch (e) { onToast(e.message, '#DC2626') } }
   return (

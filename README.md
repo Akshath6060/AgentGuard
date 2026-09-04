@@ -49,6 +49,12 @@ VITE_API_BASE_URL=http://localhost:8000 npm run dev
 
 Open `http://localhost:5173`. The seed login is `demo@agentguard.app` / `AgentGuard123!`. Seed-created agent credentials are printed exactly once. Re-running the seed does not reveal existing credentials.
 
+## Accounts and workspace administration
+
+Users can create an account from the sign-in screen. Registration creates their first isolated workspace and assigns them the `admin` role. Workspace admins can open **Workspace Admin** to create additional workspaces, add existing registered users, change member roles, and remove members. AgentGuard prevents removal or demotion of the last active workspace admin.
+
+A user can belong to multiple workspaces with a different role in each. The selected workspace is sent as `X-Workspace-ID` on API requests, and the backend validates the caller's active membership before accessing tenant data.
+
 For Atlas, set `MONGODB_URI` to the Atlas connection string and `MONGODB_DB_NAME=agentguard`. Never commit `.env`.
 
 ## Configuration
@@ -56,6 +62,21 @@ For Atlas, set `MONGODB_URI` to the Atlas connection string and `MONGODB_DB_NAME
 See `backend/.env.example`. Set a random `JWT_SECRET` of at least 32 characters outside local demos. `PAYMENT_MODE=mock` works without payment credentials. For Razorpay Test Mode, use `PAYMENT_MODE=razorpay` and configure `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, and `RAZORPAY_WEBHOOK_SECRET`; point the provider webhook at `POST /v1/payments/razorpay/webhook`.
 
 `AI_POLICY_PROVIDER=mock` uses the deterministic fallback parser. Generated policy JSON is a Pydantic-validated draft and must be published by an admin; AI output never authorizes payments.
+
+## Production deployment
+
+The production compose stack runs the API as a non-root user, serves the optimized frontend through Nginx, keeps MongoDB on an internal network with authentication and persistent storage, and exposes only the frontend/reverse-proxy port.
+
+```bash
+cp .env.production.example .env.production
+# Replace every placeholder and set your real HTTPS origin first.
+docker compose --env-file .env.production -f docker-compose.production.yml up -d --build
+docker compose --env-file .env.production -f docker-compose.production.yml ps
+```
+
+Terminate TLS at your load balancer or ingress and forward traffic to `APP_PORT`. The API refuses to start in production with the demo JWT secret, an HTTP browser origin, an unsupported payment mode, or incomplete Razorpay credentials. Use `/api/health` for liveness and `/api/ready` for MongoDB readiness. API docs remain available locally but are disabled in production.
+
+Before real payments, use Razorpay live keys only in a `live` workspace, configure the signed webhook endpoint at `https://your-domain/api/v1/payments/razorpay/webhook`, and run your provider reconciliation and disaster-recovery checks. Do not run `seed.py` in production.
 
 ## Authorization example
 

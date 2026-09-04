@@ -50,6 +50,14 @@ export const Robot = ({ size = 17 }) => (
   </svg>
 )
 
+export const Users = ({ size = 17 }) => (
+  <svg {...base} width={size} height={size} stroke="currentColor" strokeWidth="1.7">
+    <circle cx="9" cy="8" r="3" />
+    <path d="M3.5 19v-1.5A4.5 4.5 0 018 13h2a4.5 4.5 0 014.5 4.5V19" />
+    <path d="M15 5.5a3 3 0 010 5.8M17 14a4 4 0 013.5 4v1" />
+  </svg>
+)
+
 export const Card = ({ size = 17 }) => (
   <svg {...base} width={size} height={size} stroke="currentColor" strokeWidth="1.7">
     <rect x="2.5" y="5" width="19" height="14" rx="2.5" />
@@ -130,14 +138,18 @@ export const DocEmpty = ({ size = 20 }) => (
 )
 
 export const Logo = ({ size = 30 }) => (
-  <div
-    style={{
-      width: size, height: size, borderRadius: 8, background: '#4F46E5',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none',
-    }}
-  >
-    <Shield size={17} stroke="#fff" />
-  </div>
+  <svg width={size} height={size} viewBox="0 0 40 40" role="img" aria-label="AgentGuard logo" style={{ flex: 'none' }}>
+    <defs>
+      <linearGradient id="agentguard-mark" x1="5" y1="3" x2="35" y2="37" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#6366F1" />
+        <stop offset="1" stopColor="#312E81" />
+      </linearGradient>
+    </defs>
+    <rect width="40" height="40" rx="11" fill="url(#agentguard-mark)" />
+    <path d="M20 8.3 30 12v7.6c0 6.1-4.1 10.2-10 12.8-5.9-2.6-10-6.7-10-12.8V12l10-3.7Z" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinejoin="round" />
+    <path d="m15.2 20.1 3.1 3.1 6.6-7" fill="none" stroke="#A5F3FC" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    <circle cx="29.7" cy="10.4" r="2.2" fill="#67E8F9" />
+  </svg>
 )
 
 export const Razorpay = ({ size = 26, radius = 6, font = 12 }) => (

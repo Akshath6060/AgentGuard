@@ -260,6 +260,14 @@ a:hover { color: #3730A3; }
 }
 .ag-rule-btn:hover { background: #FAFAFB; }
 
+/* ---------- Workspace administration ---------- */
+.ag-member-list { border-top: 1px solid #F3F4F6; }
+.ag-member-row {
+  display: flex; align-items: center; gap: 12px; padding: 13px 0;
+  border-bottom: 1px solid #F3F4F6;
+}
+.ag-member-row:last-child { border-bottom: 0; }
+
 /* ---------- Responsive ---------- */
 @media (max-width: 1180px) {
   .ag-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -299,6 +307,8 @@ a:hover { color: #3730A3; }
   .ag-main { max-width: none; padding: 22px 20px 48px; }
   .ag-auth-brand { min-width: 300px; padding: 34px 30px; }
   .ag-policy-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .ag-admin-member-head { align-items: stretch !important; flex-wrap: wrap; }
+  .ag-admin-member-head > div:first-child { flex-basis: 100% !important; }
   .ag-profile-head { flex-direction: column; gap: 16px; }
   .ag-profile-head > div:last-child { flex-wrap: wrap; }
   .ag-pipeline { gap: 8px; overflow-x: auto; flex-wrap: nowrap !important; padding-bottom: 8px; }
@@ -345,6 +355,11 @@ a:hover { color: #3730A3; }
   .ag-choice-grid { grid-template-columns: minmax(0, 1fr) !important; }
   .ag-filter-bar .ag-search { min-width: 100% !important; }
   .ag-filter-bar .ag-btn-filter { flex: 1 1 calc(50% - 5px); min-width: 0; }
+  .ag-admin-member-head .ag-input { width: 100% !important; }
+  .ag-admin-member-head .ag-btn-filter, .ag-admin-member-head .ag-btn { flex: 1; }
+  .ag-member-row { align-items: flex-start; flex-wrap: wrap; }
+  .ag-member-row > div { min-width: calc(100% - 48px) !important; }
+  .ag-member-row > .ag-btn-filter, .ag-member-row > .ag-btn { flex: 1; }
   .ag-chart-labels > span:nth-child(even) { display: none; }
   .ag-toast { left: 14px; right: 14px; bottom: 14px; }
   .ag-approval-head { flex-direction: column; }
@@ -372,3 +387,10 @@ a:hover { color: #3730A3; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+.ag-fatal {
+  min-height: 100dvh; padding: 32px; display: grid; place-content: center; justify-items: center;
+  gap: 14px; text-align: center; background: #F7F8FA; color: #111827;
+}
+.ag-fatal h1 { margin: 8px 0 0; font-size: clamp(22px, 4vw, 30px); }
+.ag-fatal p { max-width: 480px; margin: 0 0 8px; color: #6B7280; line-height: 1.6; }

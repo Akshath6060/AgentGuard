@@ -7,6 +7,28 @@ class Login(BaseModel):
     password: str = Field(min_length=8, max_length=128)
 
 
+class Register(BaseModel):
+    name: str = Field(min_length=2, max_length=100)
+    email: EmailStr
+    password: str = Field(min_length=8, max_length=128)
+    workspace_name: str = Field(min_length=2, max_length=100)
+
+    @field_validator("name", "workspace_name")
+    @classmethod
+    def nonblank_name(cls, value):
+        value = value.strip()
+        if len(value) < 2:
+            raise ValueError("Must contain at least two non-space characters")
+        return value
+
+    @field_validator("password")
+    @classmethod
+    def strong_password(cls, value):
+        if not any(char.islower() for char in value) or not any(char.isupper() for char in value) or not any(char.isdigit() for char in value):
+            raise ValueError("Password must include uppercase, lowercase, and a number")
+        return value
+
+
 class AgentCreate(BaseModel):
     name: str = Field(min_length=2, max_length=80)
     description: str = Field(default="", max_length=500)
@@ -118,3 +140,34 @@ class WorkspacePatch(BaseModel):
     @classmethod
     def currency_upper(cls, value):
         return value.upper() if value else value
+
+
+class WorkspaceCreate(BaseModel):
+    name: str = Field(min_length=2, max_length=100)
+    environment: Literal["test", "live"] = "test"
+    default_currency: str = Field(default="INR", min_length=3, max_length=3)
+
+    @field_validator("name")
+    @classmethod
+    def nonblank_workspace_name(cls, value):
+        value = value.strip()
+        if len(value) < 2:
+            raise ValueError("Must contain at least two non-space characters")
+        return value
+
+    @field_validator("default_currency")
+    @classmethod
+    def create_currency_upper(cls, value):
+        return value.upper()
+
+
+WorkspaceRole = Literal["admin", "approver", "developer", "viewer"]
+
+
+class WorkspaceMemberAdd(BaseModel):
+    email: EmailStr
+    role: WorkspaceRole = "viewer"
+
+
+class WorkspaceMemberPatch(BaseModel):
+    role: WorkspaceRole

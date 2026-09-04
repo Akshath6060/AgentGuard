@@ -1,4 +1,4 @@
-import { Logo, Grid, Robot, Card, Shield, CircleCheck, ShieldAlert, Doc, Code, Gear, ChevronDown } from './Icons'
+import { Logo, Grid, Robot, Card, Shield, CircleCheck, ShieldAlert, Doc, Code, Gear, Users, ChevronDown } from './Icons'
 
 const MONITOR = [
   { id: 'overview', label: 'Overview', Icon: Grid },
@@ -14,6 +14,7 @@ const CONTROL = [
 ]
 
 const FOOTER = [
+  { id: 'admin', label: 'Workspace Admin', Icon: Users, adminOnly: true },
   { id: 'developers', label: 'Developers', Icon: Code },
   { id: 'settings', label: 'Settings', Icon: Gear },
 ]
@@ -63,7 +64,7 @@ export default function Sidebar({ page, onNavigate, workspace, pendingCount, ope
 
         <div style={{ flex: 1 }} />
 
-        {FOOTER.map((item) => (
+        {FOOTER.filter((item) => !item.adminOnly || workspace.role === 'admin').map((item) => (
           <NavButton key={item.id} item={item} page={page} onNavigate={navigate} pendingCount={pendingCount} />
         ))}
       </nav>

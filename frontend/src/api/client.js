@@ -1,6 +1,8 @@
-const BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+const BASE = (import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? `${window.location.protocol}//${window.location.hostname}:8000` : '/api')).replace(/\/$/, '')
 let token = localStorage.getItem('ag_token') || ''
 let workspaceId = localStorage.getItem('ag_workspace') || ''
+
+export const hasStoredSession = () => Boolean(token && workspaceId)
 
 export function setSession(nextToken, nextWorkspace) {
   if (nextToken !== undefined) { token = nextToken || ''; if (token) localStorage.setItem('ag_token', token); else localStorage.removeItem('ag_token') }
@@ -11,7 +13,17 @@ export async function request(path, options = {}) {
   const headers = { 'Content-Type': 'application/json', ...options.headers }
   if (token) headers.Authorization = `Bearer ${token}`
   if (workspaceId) headers['X-Workspace-ID'] = workspaceId
-  const response = await fetch(`${BASE}${path}`, { ...options, headers })
+  const controller = new AbortController()
+  const timeout = window.setTimeout(() => controller.abort(), 15000)
+  let response
+  try {
+    response = await fetch(`${BASE}${path}`, { ...options, headers, signal: options.signal || controller.signal })
+  } catch (error) {
+    if (error.name === 'AbortError') throw new Error('The server took too long to respond')
+    throw new Error('Cannot reach the AgentGuard API. Check the server and network connection.')
+  } finally {
+    window.clearTimeout(timeout)
+  }
   if (response.status === 204) return null
   const body = await response.json().catch(() => ({}))
   if (!response.ok) throw new Error(body.error?.message || `Request failed (${response.status})`)
@@ -65,6 +77,8 @@ export async function openRazorpayCheckout(payment, transactionId, customer = {}
 
 export const api = {
   login: (email, password) => request('/v1/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
+  register: (body) => request('/v1/auth/register', { method: 'POST', body: JSON.stringify(body) }),
+  me: () => request('/v1/auth/me'),
   agents: () => request('/v1/agents'),
   agent: (id) => request(`/v1/agents/${id}`),
   createAgent: (body) => request('/v1/agents', { method: 'POST', body: JSON.stringify(body) }),
@@ -82,7 +96,13 @@ export const api = {
   verifyPayment: (body) => request('/v1/payments/razorpay/verify', { method: 'POST', body: JSON.stringify(body) }),
   dashboard: (range = '7d') => request(`/v1/dashboard/overview?range=${range}`),
   workspace: () => request('/v1/workspaces/current'),
+  workspaces: () => request('/v1/workspaces'),
+  createWorkspace: (body) => request('/v1/workspaces', { method: 'POST', body: JSON.stringify(body) }),
   updateWorkspace: (body) => request('/v1/workspaces/current', { method: 'PATCH', body: JSON.stringify(body) }),
+  members: () => request('/v1/workspaces/current/members'),
+  addMember: (body) => request('/v1/workspaces/current/members', { method: 'POST', body: JSON.stringify(body) }),
+  updateMember: (id, role) => request(`/v1/workspaces/current/members/${id}`, { method: 'PATCH', body: JSON.stringify({ role }) }),
+  removeMember: (id) => request(`/v1/workspaces/current/members/${id}`, { method: 'DELETE' }),
   audit: () => request('/v1/audit-events'),
   keys: () => request('/v1/api-keys'),
   createKey: () => request('/v1/api-keys', { method: 'POST', body: JSON.stringify({ name: 'Test API Key', environment: 'test', scopes: ['authorizations:create'] }) }),

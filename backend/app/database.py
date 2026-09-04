@@ -2,12 +2,16 @@ from pymongo import ASCENDING, DESCENDING, AsyncMongoClient
 from .config import get_settings
 
 settings = get_settings()
-client = AsyncMongoClient(settings.mongodb_uri, tz_aware=True)
+client = AsyncMongoClient(settings.mongodb_uri, tz_aware=True, serverSelectionTimeoutMS=settings.mongodb_server_selection_timeout_ms)
 db = client[settings.mongodb_db_name]
 
 
 async def ensure_indexes(database=None):
     d = database or db
+    await d.users.create_index("user_id", unique=True)
+    await d.users.create_index("email", unique=True)
+    await d.workspaces.create_index("workspace_id", unique=True)
+    await d.workspaces.create_index([("status", ASCENDING), ("created_at", ASCENDING)])
     await d.transactions.create_index([("workspace_id", ASCENDING), ("transaction_id", ASCENDING)], unique=True)
     await d.transactions.create_index([("workspace_id", ASCENDING), ("agent_id", ASCENDING), ("idempotency_key", ASCENDING)], unique=True)
     await d.transactions.create_index([("workspace_id", ASCENDING), ("created_at", DESCENDING)])
@@ -25,3 +29,5 @@ async def ensure_indexes(database=None):
     await d.api_keys.create_index("prefix", unique=True)
     await d.webhook_events.create_index([("provider", ASCENDING), ("event_id", ASCENDING)], unique=True)
     await d.memberships.create_index([("user_id", ASCENDING), ("workspace_id", ASCENDING)], unique=True)
+    await d.memberships.create_index([("workspace_id", ASCENDING), ("status", ASCENDING), ("role", ASCENDING)])
+    await d.provider_connections.create_index([("workspace_id", ASCENDING), ("provider", ASCENDING)], unique=True)

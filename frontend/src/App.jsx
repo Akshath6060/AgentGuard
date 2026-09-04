@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { PAGE_TITLES } from './data'
-import { api, openRazorpayCheckout, setSession } from './api/client'
+import { api, hasStoredSession, openRazorpayCheckout, setSession } from './api/client'
 
 import Sidebar from './components/Sidebar'
 import Topbar from './components/Topbar'
@@ -20,8 +20,19 @@ import RiskCenter from './pages/RiskCenter'
 import AuditLogs from './pages/AuditLogs'
 import Developers from './pages/Developers'
 import Settings from './pages/Settings'
+import Admin from './pages/Admin'
+import { Logo } from './components/Icons'
+
+const presentWorkspace = (workspace) => ({
+  ...workspace,
+  initials: workspace.name.slice(0, 2).toUpperCase(),
+  meta: `${workspace.environment} workspace`,
+  env: workspace.environment === 'live' ? 'Live' : 'Test',
+  bg: '#EEF2FF', fg: '#4F46E5', envBg: '#F3F4F6', envFg: '#6B7280',
+})
 
 export default function App() {
+  const [booting, setBooting] = useState(hasStoredSession)
   const [screen, setScreen] = useState('login')
   const [page, setPage] = useState('overview')
   const [workspace, setWorkspace] = useState(null)
@@ -53,6 +64,19 @@ export default function App() {
   useEffect(() => () => clearTimeout(toastTimer.current), [])
 
   useEffect(() => {
+    if (!hasStoredSession()) return
+    Promise.all([api.me(), api.workspaces(), api.workspace()])
+      .then(([currentUser, available, currentWorkspace]) => {
+        const items = available.items.map(presentWorkspace)
+        const selected = items.find((item) => item.workspace_id === currentWorkspace.workspace_id)
+        if (!selected) throw new Error('The selected workspace is no longer available')
+        setUser(currentUser); setWorkspaces(items); setWorkspace(selected); setScreen('app')
+      })
+      .catch(() => { setSession('', ''); setScreen('login') })
+      .finally(() => setBooting(false))
+  }, [])
+
+  useEffect(() => {
     if (!navOpen) return undefined
     const previousOverflow = document.body.style.overflow
     const closeOnEscape = (event) => { if (event.key === 'Escape') setNavOpen(false) }
@@ -81,9 +105,20 @@ export default function App() {
       const result = await api.login(email, password)
       setSession(result.access_token)
       setUser(result.user)
-      setWorkspaces(result.workspaces.map((w) => ({ ...w, initials: w.name.slice(0, 2).toUpperCase(), meta: `${w.environment} workspace`, env: w.environment === 'live' ? 'Live' : 'Test', bg: '#EEF2FF', fg: '#4F46E5', envBg: '#F3F4F6', envFg: '#6B7280' })))
+      setWorkspaces(result.workspaces.map(presentWorkspace))
       setScreen('workspace')
     } catch (e) { say(e.message, '#DC2626'); throw e }
+  }
+
+  const register = async (body) => {
+    try {
+      const result = await api.register(body)
+      setSession(result.access_token)
+      setUser(result.user)
+      setWorkspaces(result.workspaces.map(presentWorkspace))
+      setScreen('workspace')
+      say('Account and workspace created')
+    } catch (error) { say(error.message, '#DC2626'); throw error }
   }
 
   const enterWorkspace = (w) => {
@@ -97,8 +132,12 @@ export default function App() {
 
   useEffect(() => { if (screen === 'app' && workspace) refresh() }, [screen, workspace, refresh])
 
+  if (booting) {
+    return <main className="ag-fatal" aria-busy="true"><Logo size={48} /><h1>Loading AgentGuard</h1><p>Restoring your secure workspace…</p></main>
+  }
+
   if (screen !== 'app') {
-    return <><Auth screen={screen} onScreen={setScreen} onEnterWorkspace={enterWorkspace} onLogin={login} workspaces={workspaces} /><Toast message={toast.message} color={toast.color} /></>
+    return <><Auth screen={screen} onScreen={setScreen} onEnterWorkspace={enterWorkspace} onLogin={login} onRegister={register} workspaces={workspaces} /><Toast message={toast.message} color={toast.color} /></>
   }
 
   const openAddAgent = () => setAgentModalOpen(true)
@@ -140,6 +179,7 @@ export default function App() {
     audit: <AuditLogs events={auditEvents} />,
     developers: <Developers onToast={say} />,
     settings: <Settings workspace={workspace} onToast={say} />,
+    admin: <Admin workspace={workspace} workspaces={workspaces} currentUser={user} onToast={say} onSwitchWorkspace={enterWorkspace} onWorkspaceCreated={(created) => { const next = presentWorkspace(created); setWorkspaces((items) => items.concat(next)); enterWorkspace(next) }} />,
   }
 
   return (

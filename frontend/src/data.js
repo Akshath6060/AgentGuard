@@ -179,7 +179,7 @@ export const GENERATED_RULES = [
 export const PAGE_TITLES = {
   overview: 'Overview', agents: 'AI Agents', agentProfile: 'Agent Profile', transactions: 'Transactions',
   detail: 'Transaction Analysis', approvals: 'Approval Center', policies: 'Policies', risk: 'Risk Center',
-  audit: 'Audit Logs', developers: 'Developers', settings: 'Settings',
+  audit: 'Audit Logs', admin: 'Workspace Admin', developers: 'Developers', settings: 'Settings',
 }
 
 export const initials = (n) => n.replace(/[^A-Za-z]/g, '').slice(0, 2).toUpperCase()
