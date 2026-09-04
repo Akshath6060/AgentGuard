@@ -97,6 +97,13 @@ class ApprovalDecision(BaseModel):
     version: int = Field(ge=1)
 
 
+class RazorpayPaymentVerification(BaseModel):
+    transaction_id: str = Field(min_length=3, max_length=128)
+    razorpay_order_id: str = Field(min_length=3, max_length=128)
+    razorpay_payment_id: str = Field(min_length=3, max_length=128)
+    razorpay_signature: str = Field(min_length=16, max_length=256)
+
+
 class APIKeyCreate(BaseModel):
     name: str = Field(default="Developer key", max_length=80)
     environment: Literal["test", "live"] = "test"

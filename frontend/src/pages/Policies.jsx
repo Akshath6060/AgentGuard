@@ -32,7 +32,7 @@ export default function Policies({ policies = [], onCreate }) {
 
             <p style={{ margin: '0 0 14px', fontSize: 13, color: '#6B7280' }}>{p.desc}</p>
 
-            <div
+            <div className="ag-policy-metrics"
               style={{
                 display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10,
                 paddingTop: 14, borderTop: '1px solid #F3F4F6',

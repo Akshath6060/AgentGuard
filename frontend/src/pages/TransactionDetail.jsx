@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { STAT, sigColor, sigBg, resColor } from '../data'
 import { ArrowRight, CheckBold, Razorpay } from '../components/Icons'
-import { api } from '../api/client'
+import { api, openRazorpayCheckout } from '../api/client'
 
 const RING = 2 * Math.PI * 16.5
 const PIPE_LABELS = ['Agent Request', 'Intent Analysis', 'Policy Check', 'Risk Analysis', 'Payment Decision']
 
-export default function TransactionDetail({ txId, onBack, onToast, onChanged }) {
+export default function TransactionDetail({ txId, onBack, onToast, onChanged, checkoutCustomer }) {
   const [pipe, setPipe] = useState(0)
   const [raw, setRaw] = useState(null)
   const [error, setError] = useState('')
@@ -30,10 +30,19 @@ export default function TransactionDetail({ txId, onBack, onToast, onChanged }) 
       const queue = await api.approvals()
       const approval = queue.items.find((item) => item.transaction_id === txId)
       if (!approval) throw new Error('Pending approval not found')
-      await api.decide(approval.approval_id, decision, approval.version)
+      const result = await api.decide(approval.approval_id, decision, approval.version)
+      if (decision === 'approve' && result.payment?.checkout) {
+        try {
+          await openRazorpayCheckout(result.payment, result.transaction_id, checkoutCustomer)
+          onToast('Payment completed and verified')
+        } catch (checkoutError) {
+          onToast(`Approval recorded, but ${checkoutError.message}`, '#D97706')
+        }
+      } else {
+        onToast(decision === 'approve' ? 'Payment approved' : 'Transaction rejected', decision === 'approve' ? '#16A34A' : '#DC2626')
+      }
       setRaw(await api.transaction(txId))
       await onChanged()
-      onToast(decision === 'approve' ? 'Payment approved' : 'Transaction rejected', decision === 'approve' ? '#16A34A' : '#DC2626')
     } catch (e) { onToast(e.message, '#DC2626') }
   }
 
@@ -65,8 +74,8 @@ export default function TransactionDetail({ txId, onBack, onToast, onChanged }) 
     <div className="ag-rise">
       <button className="ag-btn-back" onClick={onBack}>← Transactions</button>
 
-      <div className="ag-card" style={{ padding: '22px 24px', marginBottom: 16 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 24, flexWrap: 'wrap' }}>
+      <div className="ag-card ag-detail-hero" style={{ padding: '22px 24px', marginBottom: 16 }}>
+        <div className="ag-detail-summary" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 24, flexWrap: 'wrap' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
               <span className="ag-note">Transaction</span>
@@ -127,7 +136,7 @@ export default function TransactionDetail({ txId, onBack, onToast, onChanged }) 
           </div>
         </div>
 
-        <div
+        <div className="ag-pipeline"
           style={{
             display: 'flex', alignItems: 'center', marginTop: 22, paddingTop: 20,
             borderTop: '1px solid #F3F4F6', flexWrap: 'wrap',

@@ -111,7 +111,7 @@ export default function Overview({ data, transactions = [], agents = [], onRange
               <path d={chart.line} fill="none" stroke="#4F46E5" strokeWidth="2.2" strokeLinejoin="round" strokeLinecap="round" />
               <circle cx={chart.lastX} cy={chart.lastY} r="4.5" fill="#fff" stroke="#4F46E5" strokeWidth="2.4" />
             </svg>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
+            <div className="ag-chart-labels" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
               {chart.labels.map((lbl, i) => (
                 <span key={i} style={{ fontSize: 11.5, color: '#9CA3AF' }}>{lbl}</span>
               ))}

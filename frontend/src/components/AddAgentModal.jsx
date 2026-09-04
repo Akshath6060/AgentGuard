@@ -42,7 +42,7 @@ export default function AddAgentModal({ onClose, onCreate }) {
           <button className="ag-btn-close" onClick={onClose}>✕</button>
         </div>
 
-        <div style={{ display: 'flex', gap: 6, padding: '16px 22px', borderBottom: '1px solid #F3F4F6' }}>
+        <div className="ag-modal-steps" style={{ display: 'flex', gap: 6, padding: '16px 22px', borderBottom: '1px solid #F3F4F6' }}>
           {STEPS.map((label, i) => (
             <div key={label} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 7 }}>
               <span style={{ height: 3, borderRadius: 2, background: i <= step ? IND : '#E5E7EB', display: 'block' }} />
@@ -91,7 +91,7 @@ export default function AddAgentModal({ onClose, onCreate }) {
           {step === 1 && (
             <>
               <label className="ag-label" style={{ marginBottom: 10 }}>Select allowed spending categories.</label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
+              <div className="ag-choice-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
                 {CATS.map((label) => {
                   const on = cats.includes(label)
                   return (

@@ -197,9 +197,9 @@ function WorkspacePicker({ onEnter, onBack, workspaces }) {
 
 export default function Auth({ screen, onScreen, onEnterWorkspace, onLogin, workspaces = [] }) {
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#F7F8FA' }}>
+    <div className="ag-auth-shell" style={{ display: 'flex', minHeight: '100vh', background: '#F7F8FA' }}>
       <Brand />
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
+      <div className="ag-auth-panel" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
         <div style={{ width: '100%', maxWidth: 380 }}>
           {screen === 'login' && <Login onSubmit={onLogin} />}
           {screen === 'verify' && <Verify onSubmit={() => onScreen('workspace')} onBack={() => onScreen('login')} />}

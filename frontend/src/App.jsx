@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { PAGE_TITLES } from './data'
-import { api, setSession } from './api/client'
+import { api, openRazorpayCheckout, setSession } from './api/client'
 
 import Sidebar from './components/Sidebar'
 import Topbar from './components/Topbar'
@@ -28,6 +28,7 @@ export default function App() {
   const [workspaces, setWorkspaces] = useState([])
   const [user, setUser] = useState(null)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [navOpen, setNavOpen] = useState(false)
   const [txId, setTxId] = useState('AGTX-40290')
   const [approvals, setApprovals] = useState([])
   const [agents, setAgents] = useState([])
@@ -50,6 +51,18 @@ export default function App() {
   }, [])
 
   useEffect(() => () => clearTimeout(toastTimer.current), [])
+
+  useEffect(() => {
+    if (!navOpen) return undefined
+    const previousOverflow = document.body.style.overflow
+    const closeOnEscape = (event) => { if (event.key === 'Escape') setNavOpen(false) }
+    document.body.style.overflow = 'hidden'
+    window.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [navOpen])
 
   const openTx = (id) => {
     setTxId(id)
@@ -91,8 +104,21 @@ export default function App() {
   const openAddAgent = () => setAgentModalOpen(true)
 
   const resolveApproval = async (_index, approval, approved) => {
-    try { await api.decide(approval.approval_id, approved ? 'approve' : 'reject', approval.version); await refresh(); say(approved ? 'Payment approved' : 'Payment rejected', approved ? '#16A34A' : '#DC2626') }
-    catch (e) { say(e.message, '#DC2626') }
+    try {
+      const result = await api.decide(approval.approval_id, approved ? 'approve' : 'reject', approval.version)
+      if (approved && result.payment?.checkout) {
+        try {
+          await openRazorpayCheckout(result.payment, result.transaction_id, user)
+          say('Payment completed and verified')
+        } catch (error) {
+          say(`Approval recorded, but ${error.message}`, '#D97706')
+        }
+      } else {
+        say(approved ? (result.payment?.status === 'failed' ? 'Approved, but payment initiation failed' : 'Payment approved') : 'Payment rejected', approved && result.payment?.status !== 'failed' ? '#16A34A' : '#DC2626')
+      }
+      await refresh()
+    }
+    catch (e) { await refresh(); say(e.message, '#DC2626') }
   }
 
   const pages = {
@@ -100,7 +126,7 @@ export default function App() {
     agents: <Agents agents={agents} onOpenAgent={(id) => { setAgentId(id); setPage('agentProfile') }} onAddAgent={openAddAgent} />,
     agentProfile: <AgentProfile agentId={agentId} onBack={() => setPage('agents')} onToast={say} onChanged={refresh} />,
     transactions: <Transactions transactions={transactions} agents={agents} onSearch={async (params) => setTransactions((await api.transactions(params)).items)} onOpenTx={openTx} />,
-    detail: <TransactionDetail txId={txId} onBack={() => setPage('transactions')} onToast={say} onChanged={refresh} />,
+    detail: <TransactionDetail txId={txId} onBack={() => setPage('transactions')} onToast={say} onChanged={refresh} checkoutCustomer={user} />,
     approvals: (
       <Approvals
         approvals={approvals}
@@ -118,12 +144,14 @@ export default function App() {
 
   return (
     <div className="ag-shell">
-      <Sidebar page={page} onNavigate={setPage} workspace={workspace} pendingCount={approvals.length} />
+      <Sidebar page={page} onNavigate={setPage} workspace={workspace} pendingCount={approvals.length} open={navOpen} onClose={() => setNavOpen(false)} />
 
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
         <Topbar
           title={PAGE_TITLES[page] || 'AgentGuard'}
           user={{ ...user, role: workspace.role }}
+          navOpen={navOpen}
+          onOpenNav={() => setNavOpen(true)}
           menuOpen={menuOpen}
           onToggleMenu={() => setMenuOpen((v) => !v)}
           onCloseMenu={() => setMenuOpen(false)}

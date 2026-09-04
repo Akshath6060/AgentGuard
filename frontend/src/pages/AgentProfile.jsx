@@ -28,7 +28,7 @@ export default function AgentProfile({ agentId, onBack, onToast, onChanged }) {
     <div className="ag-rise">
       <button className="ag-btn-back" onClick={onBack}>← Agents</button>
 
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20 }}>
+      <div className="ag-profile-head" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20 }}>
         <div style={{ display: 'flex', gap: 14 }}>
           <div
             className="ag-avatar"

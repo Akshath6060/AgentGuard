@@ -33,9 +33,15 @@ function NavButton({ item, page, onNavigate, pendingCount }) {
   )
 }
 
-export default function Sidebar({ page, onNavigate, workspace, pendingCount }) {
+export default function Sidebar({ page, onNavigate, workspace, pendingCount, open = false, onClose }) {
+  const navigate = (destination) => {
+    onNavigate(destination)
+    onClose?.()
+  }
   return (
-    <aside className="ag-sidebar">
+    <>
+    <button className={'ag-sidebar-backdrop' + (open ? ' is-open' : '')} onClick={onClose} aria-label="Close navigation" />
+    <aside id="agentguard-navigation" className={'ag-sidebar' + (open ? ' is-open' : '')}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '20px 20px 18px' }}>
         <Logo />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -47,18 +53,18 @@ export default function Sidebar({ page, onNavigate, workspace, pendingCount }) {
       <nav className="ag-nav">
         <span className="ag-nav-group">MONITOR</span>
         {MONITOR.map((item) => (
-          <NavButton key={item.id} item={item} page={page} onNavigate={onNavigate} pendingCount={pendingCount} />
+          <NavButton key={item.id} item={item} page={page} onNavigate={navigate} pendingCount={pendingCount} />
         ))}
 
         <span className="ag-nav-group" style={{ paddingTop: 14 }}>CONTROL</span>
         {CONTROL.map((item) => (
-          <NavButton key={item.id} item={item} page={page} onNavigate={onNavigate} pendingCount={pendingCount} />
+          <NavButton key={item.id} item={item} page={page} onNavigate={navigate} pendingCount={pendingCount} />
         ))}
 
         <div style={{ flex: 1 }} />
 
         {FOOTER.map((item) => (
-          <NavButton key={item.id} item={item} page={page} onNavigate={onNavigate} pendingCount={pendingCount} />
+          <NavButton key={item.id} item={item} page={page} onNavigate={navigate} pendingCount={pendingCount} />
         ))}
       </nav>
 
@@ -83,5 +89,6 @@ export default function Sidebar({ page, onNavigate, workspace, pendingCount }) {
         <ChevronDown style={{ marginLeft: 'auto' }} />
       </div>
     </aside>
+    </>
   )
 }

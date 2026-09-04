@@ -9,8 +9,32 @@ from ..services.payment_service import initiate
 from ..services.authorization_service import _spend
 
 router=APIRouter(prefix="/v1/approvals",tags=["approvals"])
+
+async def expire_stale(workspace_id: str):
+    current = now()
+    stale = await db.approvals.find(
+        {"workspace_id": workspace_id, "status": "pending", "expires_at": {"$lte": current}},
+        {"_id": 1, "transaction_id": 1, "version": 1},
+    ).to_list(200)
+    expired_transaction_ids = []
+    for item in stale:
+        expired = await db.approvals.find_one_and_update(
+            {"_id": item["_id"], "status": "pending", "version": item["version"], "expires_at": {"$lte": current}},
+            {"$set": {"status": "expired", "decided_at": current}, "$inc": {"version": 1}},
+            return_document=ReturnDocument.AFTER,
+        )
+        if expired:
+            expired_transaction_ids.append(item["transaction_id"])
+    if expired_transaction_ids:
+        await db.transactions.update_many(
+            {"workspace_id": workspace_id, "transaction_id": {"$in": expired_transaction_ids}, "decision_state": "review_pending"},
+            {"$set": {"decision_state": "expired", "updated_at": current}},
+        )
+
 @router.get("")
 async def approvals(status:str="pending",user=Depends(current_user)):
+    if status == "pending":
+        await expire_stale(user["workspace_id"])
     docs=await db.approvals.find({"workspace_id":user["workspace_id"],"status":status}).sort("created_at",-1).to_list(200)
     ids=[d["transaction_id"] for d in docs]; txs=await db.transactions.find({"workspace_id":user["workspace_id"],"transaction_id":{"$in":ids}}).to_list(200); by={t["transaction_id"]:t for t in txs}
     can_decide=user["role"] in {"admin","approver"}

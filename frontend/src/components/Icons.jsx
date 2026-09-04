@@ -91,6 +91,12 @@ export const Bell = ({ size = 17 }) => (
   </svg>
 )
 
+export const Menu = ({ size = 19 }) => (
+  <svg {...base} width={size} height={size} stroke="currentColor" strokeWidth="1.8">
+    <path d="M4 7h16M4 12h16M4 17h16" />
+  </svg>
+)
+
 export const Search = ({ size = 15 }) => (
   <svg {...base} width={size} height={size} stroke="#9CA3AF" strokeWidth="1.8">
     <circle cx="11" cy="11" r="6.5" />

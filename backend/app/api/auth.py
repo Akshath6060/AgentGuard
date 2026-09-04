@@ -14,11 +14,11 @@ async def login(body: Login):
     ids = [m["workspace_id"] for m in memberships]
     workspaces = await db.workspaces.find({"workspace_id": {"$in": ids}, "status": "active"}).to_list(20)
     roles = {m["workspace_id"]: m["role"] for m in memberships}
-    return {"access_token": create_token(user["user_id"]), "token_type": "bearer", "user": clean(user), "workspaces": [{**clean(w), "role": roles[w["workspace_id"]]} for w in workspaces]}
+    public_user = {key: user.get(key) for key in ("user_id", "email", "name", "status")}
+    return {"access_token": create_token(user["user_id"]), "token_type": "bearer", "user": clean(public_user), "workspaces": [{**clean(w), "role": roles[w["workspace_id"]]} for w in workspaces]}
 
 @router.get("/me")
 async def me(user=Depends(current_user)): return user
 
 @router.post("/logout", status_code=204)
 async def logout(user=Depends(current_user)): return None
-

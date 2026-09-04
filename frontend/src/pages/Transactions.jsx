@@ -37,7 +37,7 @@ export default function Transactions({ transactions = [], agents = [], onSearch,
         ))}
       </div>
 
-      <div style={{ display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap' }}>
+      <div className="ag-filter-bar" style={{ display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap' }}>
         <div className="ag-search" style={{ flex: 1, minWidth: 240 }}>
           <Search />
           <input placeholder="Search transaction ID, merchant or agent" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') onSearch({ q: query }) }} />

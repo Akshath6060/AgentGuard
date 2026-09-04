@@ -3,8 +3,10 @@ from pymongo import ReturnDocument
 from ..database import db
 from ..integrations.razorpay import create_order
 from ..utils import now
+from ..config import get_settings
 from .audit_service import audit
 
+settings = get_settings()
 
 async def initiate(transaction_id, workspace_id, actor, request_id):
     tx = await db.transactions.find_one_and_update(
@@ -24,6 +26,8 @@ async def initiate(transaction_id, workspace_id, actor, request_id):
         await db.transactions.update_one({"_id": tx["_id"]}, {"$set": {"payment": payment, "updated_at": now()}})
         if status == "succeeded":
             await audit(workspace_id, {"type": "system", "id": "razorpay"}, "payment.succeeded", "transaction", transaction_id, request_id, {"provider_order_id": order["id"]})
+        if settings.payment_mode == "razorpay" and status == "processing":
+            return {**payment, "checkout": {"key_id": settings.razorpay_key_id, "order_id": order["id"], "amount": tx["amount"]["minor"], "currency": tx["amount"]["currency"]}}
         return payment
     except Exception:
         payment={"provider":"razorpay","status":"failed","failure_code":"PROVIDER_REQUEST_FAILED","updated_at":now()}

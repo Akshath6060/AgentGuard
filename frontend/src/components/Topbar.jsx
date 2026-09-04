@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { Search, Bell } from './Icons'
+import { Search, Bell, Menu } from './Icons'
 
-export default function Topbar({ title, user, menuOpen, onToggleMenu, onCloseMenu, onNavigate, onSearch, onNotifications, onSwitchWorkspace, onSignOut }) {
+export default function Topbar({ title, user, menuOpen, navOpen, onOpenNav, onToggleMenu, onCloseMenu, onNavigate, onSearch, onNotifications, onSwitchWorkspace, onSignOut }) {
   const ref = useRef(null)
   const [query, setQuery] = useState('')
 
@@ -16,9 +16,12 @@ export default function Topbar({ title, user, menuOpen, onToggleMenu, onCloseMen
 
   return (
     <header className="ag-topbar">
-      <span style={{ fontSize: 14.5, fontWeight: 600 }}>{title}</span>
+      <button className="ag-btn-icon ag-mobile-nav-button" onClick={onOpenNav} aria-label="Open navigation" aria-controls="agentguard-navigation" aria-expanded={navOpen}>
+        <Menu />
+      </button>
+      <span className="ag-topbar-title" style={{ fontSize: 14.5, fontWeight: 600 }}>{title}</span>
 
-      <div className="ag-search" style={{ marginLeft: 12, background: '#F7F8FA', height: 36, width: 300 }}>
+      <div className="ag-search ag-topbar-search" style={{ marginLeft: 12, background: '#F7F8FA', height: 36, width: 300 }}>
         <Search />
         <input placeholder="Search agents, transactions, merchants" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && query.trim()) onSearch(query.trim()) }} />
       </div>
