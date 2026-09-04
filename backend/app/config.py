@@ -22,8 +22,19 @@ class Settings(BaseSettings):
     razorpay_webhook_secret: str = ""
     payment_mode: str = "mock"
     ai_policy_provider: str = "mock"
+    embedding_provider: str = "mock"
+    embedding_model: str = "text-embedding-3-small"
+    embedding_dimensions: int = Field(default=1536, ge=8, le=4096)
+    llm_provider: str = "mock"
+    llm_model: str = "gpt-4.1-mini"
+    openai_api_key: str = ""
+    rag_chunk_size: int = Field(default=700, ge=100, le=2000)
+    rag_chunk_overlap: int = Field(default=120, ge=0, le=500)
+    rag_top_k: int = Field(default=5, ge=1, le=20)
+    mongodb_vector_index: str = "policy_chunks_vector"
+    ai_rate_limit_per_minute: int = Field(default=30, ge=1, le=1000)
 
-    @field_validator("app_env", "payment_mode", "ai_policy_provider", mode="before")
+    @field_validator("app_env", "payment_mode", "ai_policy_provider", "embedding_provider", "llm_provider", mode="before")
     @classmethod
     def normalize_mode(cls, value):
         return str(value).strip().lower()
@@ -49,6 +60,12 @@ class Settings(BaseSettings):
             raise RuntimeError("APP_ENV must be development, test, or production")
         if self.payment_mode not in {"mock", "razorpay"}:
             raise RuntimeError("PAYMENT_MODE must be mock or razorpay")
+        if self.embedding_provider not in {"mock", "openai"} or self.llm_provider not in {"mock", "openai"}:
+            raise RuntimeError("EMBEDDING_PROVIDER and LLM_PROVIDER must be mock or openai")
+        if self.rag_chunk_overlap >= self.rag_chunk_size:
+            raise RuntimeError("RAG_CHUNK_OVERLAP must be smaller than RAG_CHUNK_SIZE")
+        if (self.embedding_provider == "openai" or self.llm_provider == "openai") and not self.openai_api_key:
+            raise RuntimeError("OPENAI_API_KEY is required for the configured AI provider")
         if self.is_production:
             if self.jwt_secret.startswith(("development-", "replace-")):
                 raise RuntimeError("JWT_SECRET must be replaced in production")

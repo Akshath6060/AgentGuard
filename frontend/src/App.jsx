@@ -181,7 +181,7 @@ export default function App() {
         onView={openTx}
       />
     ),
-    policies: <Policies policies={policies} onCreate={() => setPolicyOpen(true)} />,
+    policies: <Policies policies={policies} onCreate={() => setPolicyOpen(true)} onChanged={refresh} onToast={say} />,
     risk: <RiskCenter data={dashboard} />,
     audit: <AuditLogs events={auditEvents} />,
     developers: <Developers onToast={say} />,

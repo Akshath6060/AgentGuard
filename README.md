@@ -1,12 +1,22 @@
 # AgentGuard
 
-AgentGuard is a governance and payment-authorization layer for autonomous AI agents. It sits before payment execution, authenticates the agent, evaluates deterministic workspace policy, scores explainable risk, and returns `approved`, `review`, or `blocked`. Only approved decisions can reach Razorpay or the local payment simulator.
+AgentGuard is a context-aware payment authorization and security layer for autonomous AI agents. It combines deterministic security guardrails, RAG-powered organizational policy intelligence, explainable risk scoring, human approvals, and Razorpay. It returns `approved`, `review`, or `blocked`; an LLM can never authorize or execute a payment by itself.
 
-```text
-AI Agent -> AgentGuard Authorization API -> Policy Engine -> Risk Engine
-                                                    |-> APPROVED -> Razorpay/mock
-                                                    |-> REVIEW -> Human approval -> Razorpay/mock
-                                                    `-> BLOCKED -> no provider call
+```mermaid
+flowchart LR
+  A[AI Agent] --> B[AgentGuard API]
+  B --> C[Authentication]
+  C --> D[Deterministic Guardrails]
+  D --> E[MongoDB Atlas Vector Search]
+  E --> F[RAG Policy Evidence]
+  F --> G[Structured LLM Analysis]
+  D --> H[Hybrid Risk Engine]
+  G --> H
+  H -->|ALLOW| R[Razorpay Test Mode]
+  H -->|REQUIRE_APPROVAL| I[Human Approval]
+  I -->|Approved| R
+  I -->|Rejected| X[Stop]
+  H -->|BLOCK| X
 ```
 
 This repository preserves the existing React/Vite interface and connects it to a Python/FastAPI and MongoDB backend.
@@ -22,6 +32,9 @@ This repository preserves the existing React/Vite interface and connects it to a
 - atomic, versioned approval decisions and authorization idempotency
 - mock payments by default; Razorpay Test Mode and signed webhooks when configured
 - immutable audit events and measured authorization traces
+- configurable policy cleaning/chunking and provider-neutral embeddings
+- tenant-filtered Atlas Vector Search with local cosine fallback for development
+- schema-validated LLM JSON, conservative failure handling, and immutable decision evidence
 
 The backend separates route handlers, services, engines, database configuration, and external integrations under `backend/app/`.
 
@@ -62,6 +75,27 @@ For Atlas, set `MONGODB_URI` to the Atlas connection string and `MONGODB_DB_NAME
 See `backend/.env.example`. Set a random `JWT_SECRET` of at least 32 characters outside local demos. `PAYMENT_MODE=mock` works without payment credentials. For Razorpay Test Mode, use `PAYMENT_MODE=razorpay` and configure `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, and `RAZORPAY_WEBHOOK_SECRET`; point the provider webhook at `POST /v1/payments/razorpay/webhook`.
 
 `AI_POLICY_PROVIDER=mock` uses the deterministic fallback parser. Generated policy JSON is a Pydantic-validated draft and must be published by an admin; AI output never authorizes payments.
+
+For RAG, configure `EMBEDDING_PROVIDER`, `EMBEDDING_MODEL`, `EMBEDDING_DIMENSIONS`, `LLM_PROVIDER`, `LLM_MODEL`, `OPENAI_API_KEY`, `RAG_CHUNK_SIZE`, `RAG_CHUNK_OVERLAP`, `RAG_TOP_K`, `MONGODB_VECTOR_INDEX`, and `AI_RATE_LIMIT_PER_MINUTE`. The `mock` providers are deterministic and require no network access. Policies are marked `indexing_failed` if embedding generation fails; authorization continues with deterministic guardrails and conservative review behavior.
+
+## MongoDB Atlas Vector Search
+
+Create a Vector Search index named `policy_chunks_vector` (or the value of `MONGODB_VECTOR_INDEX`) on the `policy_chunks` collection. Its vector field is `embedding`, dimensions must equal `EMBEDDING_DIMENSIONS`, similarity should be `cosine`, and `workspace_id` must be declared as a filter field. Example definition:
+
+```json
+{
+  "fields": [
+    { "type": "vector", "path": "embedding", "numDimensions": 1536, "similarity": "cosine" },
+    { "type": "filter", "path": "workspace_id" }
+  ]
+}
+```
+
+Every retrieval query includes the authenticated workspace filter. Local MongoDB automatically falls back to an in-process cosine search over that workspace's chunks; this is for demos, not large production corpora.
+
+## RAG and decision flow
+
+Policy content is cleaned, split into configurable overlapping chunks, embedded through the provider abstraction, and stored with policy/workspace metadata. Authorization builds a semantic query from the agent, amount, merchant, verification state, category, purpose, payment type, and history. Retrieved snippets are passed to a constrained LLM prompt and validated against a strict Pydantic schema. The hybrid engine weighs transaction signals and policy analysis, while deterministic blocks always win. Failed AI calls never turn a suspicious request into an automatic approval.
 
 ## Production deployment
 
@@ -109,6 +143,8 @@ The response includes a transaction ID, deterministic decision, stable reason co
 - InvestmentAgent, ₹80,000, cryptocurrency: hard `CATEGORY_BLOCKED`; no payment call occurs.
 
 The seed creates schema-compatible history for all three states.
+
+The **Policy Intelligence** page shows status, category, chunks, indexing state, content, and re-index controls. Transaction detail includes **Why this decision?**, retrieved snippets and similarity scores, structured **AI Policy Reasoning**, and the decision timeline. For a live demo: sign in, create and index a finance policy, submit an authorization with a printed agent key, inspect its evidence, then approve or reject review decisions from the Approval Center.
 
 ## Security design
 

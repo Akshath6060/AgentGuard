@@ -3,6 +3,7 @@ from datetime import timedelta
 from app.database import db,ensure_indexes,client
 from app.security import hash_password
 from app.utils import now,secret
+from app.services.rag.indexing_service import index_policy
 
 WS="ws_demo";SWS="ws_sandbox";USER="usr_admin"
 POLICIES=[
@@ -12,14 +13,24 @@ POLICIES=[
  ("pol_investment","Investment Policy",{"limits":{"per_transaction":10000000,"daily":20000000,"monthly":50000000},"categories":{"allowed":["securities"],"blocked":["cryptocurrency"]},"merchant_rules":{"unknown":"review"},"international":{"allowed":False},"repeated_failures":{"threshold":3,"action":"block"}}),
  ("pol_operations","Operations Policy",{"limits":{"per_transaction":1200000,"daily":4000000,"monthly":12000000},"categories":{"allowed":["software","utilities","support"],"blocked":["cryptocurrency","gift cards"]},"merchant_rules":{"unknown":"review"},"international":{"allowed":True},"repeated_failures":{"threshold":3,"action":"review"}}),
  ("pol_shopping","Shopping Policy",{"limits":{"per_transaction":1000000,"daily":3000000,"monthly":9000000},"categories":{"allowed":["office supplies","electronics","food"],"blocked":["cryptocurrency","gift cards"]},"merchant_rules":{"unknown":"review","unknown_international":"review"},"international":{"allowed":False},"repeated_failures":{"threshold":3,"action":"review"}}),]
-AGENTS=[("agt_travel_01","TravelAgent","travel","pol_travel"),("agt_procure_04","ProcurementAgent","procurement","pol_procurement"),("agt_mktg_02","MarketingAgent","marketing","pol_marketing"),("agt_invest_01","InvestmentAgent","investment","pol_investment"),("agt_support_05","SupportAgent","support","pol_operations"),("agt_finance_06","FinanceAgent","finance","pol_operations"),("agt_subs_07","SubscriptionBot","subscription","pol_operations"),("agt_shop_03","ShoppingAgent","shopping","pol_shopping")]
+AGENTS=[("agt_travel_01","TravelAgent","travel","pol_travel"),("agt_procure_04","ProcurementAgent","procurement","pol_procurement"),("agt_mktg_02","MarketingBot","marketing","pol_marketing"),("agt_invest_01","InvestmentAgent","investment","pol_investment"),("agt_support_05","SupportAgent","support","pol_operations"),("agt_finance_06","FinanceAgent","finance","pol_operations"),("agt_subs_07","SubscriptionBot","subscription","pol_operations"),("agt_shop_03","ShoppingAgent","shopping","pol_shopping")]
+KNOWLEDGE_POLICIES=[
+ ("pol_kb_agent","Agent Spending Policy","agent","AI agents may perform transactions up to ₹20,000 without manual approval. Transactions between ₹20,000 and ₹50,000 require manager approval. Transactions above ₹50,000 require finance administrator approval."),
+ ("pol_kb_vendor","Vendor Verification Policy","vendor","Payments to newly registered or unverified vendors require human approval regardless of transaction value."),
+ ("pol_kb_security","Security Policy","security","Transactions to blocked or suspicious merchants must be rejected."),
+ ("pol_kb_subscription","Subscription Policy","subscription","Recurring SaaS subscriptions below ₹15,000 may be automatically approved for verified vendors."),
+]
 async def seed():
     await ensure_indexes();t=now()
     await db.workspaces.update_one({"workspace_id":WS},{"$set":{"workspace_id":WS,"name":"AgentGuard Demo","environment":"test","default_currency":"INR","status":"active","created_at":t}},upsert=True)
     await db.users.update_one({"user_id":USER},{"$set":{"user_id":USER,"email":"demo@agentguard.app","name":"Demo Admin","password_hash":hash_password("AgentGuard123!"),"status":"active","created_at":t}},upsert=True)
     await db.memberships.update_one({"user_id":USER,"workspace_id":WS},{"$set":{"user_id":USER,"workspace_id":WS,"role":"admin","status":"active"}},upsert=True)
     await db.provider_connections.update_one({"workspace_id":WS,"provider":"razorpay"},{"$set":{"workspace_id":WS,"provider":"razorpay","environment":"test","status":"connected","account_reference":"Razorpay Test Mode","updated_at":t}},upsert=True)
-    for pid,name,rules in POLICIES:await db.policies.update_one({"workspace_id":WS,"policy_id":pid,"version":1},{"$set":{"workspace_id":WS,"policy_id":pid,"name":name,"version":1,"status":"active","rules":rules,"created_by":USER,"created_at":t,"updated_at":t}},upsert=True)
+    for pid,name,rules in POLICIES:await db.policies.update_one({"workspace_id":WS,"policy_id":pid,"version":1},{"$set":{"workspace_id":WS,"organization_id":WS,"policy_id":pid,"name":name,"title":name,"description":"Assigned deterministic agent controls.","category":"payment","content":"","version":1,"status":"active","rules":rules,"chunks":0,"embedding_status":"pending","created_by":USER,"created_at":t,"updated_at":t}},upsert=True)
+    for pid,name,category,content in KNOWLEDGE_POLICIES:
+        await db.policies.update_one({"workspace_id":WS,"policy_id":pid,"version":1},{"$set":{"workspace_id":WS,"organization_id":WS,"policy_id":pid,"name":name,"title":name,"description":content,"category":category,"content":content,"source_file":None,"version":1,"status":"active","rules":{},"chunks":0,"embedding_status":"pending","created_by":USER,"created_at":t,"updated_at":t}},upsert=True)
+        policy=await db.policies.find_one({"workspace_id":WS,"policy_id":pid,"version":1})
+        await index_policy(policy)
     credentials=[]
     for aid,name,typ,pid in AGENTS:
         await db.agents.update_one({"workspace_id":WS,"agent_id":aid},{"$set":{"workspace_id":WS,"agent_id":aid,"name":name,"description":f"Demo {typ} agent","type":typ,"status":"active","policy_id":pid,"risk":{"score":0,"band":"low"},"created_at":t,"updated_at":t}},upsert=True)

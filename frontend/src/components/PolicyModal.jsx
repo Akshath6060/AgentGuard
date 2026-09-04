@@ -3,6 +3,8 @@ export default function PolicyModal({ onClose, onSave, onGenerate }) {
   const [generating, setGenerating] = useState(false)
   const [generated, setGenerated] = useState(false)
   const [text, setText] = useState('')
+  const [name, setName] = useState('')
+  const [category, setCategory] = useState('payment')
   const [rules, setRules] = useState(null)
   const [error, setError] = useState('')
 
@@ -33,6 +35,10 @@ export default function PolicyModal({ onClose, onSave, onGenerate }) {
         </div>
 
         <div style={{ padding: '20px 22px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 12, marginBottom: 14 }}>
+            <div><label className="ag-label">Policy title</label><input className="ag-input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Finance Payment Policy" /></div>
+            <div><label className="ag-label">Category</label><select className="ag-input" value={category} onChange={(e) => setCategory(e.target.value)}>{['payment','security','agent','vendor','approval','finance','subscription','refund','other'].map((value) => <option key={value}>{value}</option>)}</select></div>
+          </div>
           <label className="ag-label" style={{ marginBottom: 7 }}>
             Describe how this agent should be allowed to spend.
           </label>
@@ -94,7 +100,7 @@ export default function PolicyModal({ onClose, onSave, onGenerate }) {
 
               <div style={{ display: 'flex', gap: 9, marginTop: 16, justifyContent: 'flex-end' }}>
                 <button className="ag-btn ag-btn-tall" style={{ color: '#4B5563' }} onClick={onClose}>Edit Rules</button>
-                <button className="ag-btn ag-btn-primary ag-btn-tall" onClick={() => onSave({ name: `Generated Policy ${new Date().toLocaleDateString()}`, rules, source_text: text })}>Save Policy</button>
+                <button disabled={!name.trim()} className="ag-btn ag-btn-primary ag-btn-tall" onClick={() => onSave({ name: name.trim(), category, description: text.slice(0, 300), content: text, rules, source_text: text })}>Save &amp; Index Policy</button>
               </div>
             </>
           )}

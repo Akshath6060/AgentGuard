@@ -25,7 +25,7 @@ async def initiate(transaction_id, workspace_id, actor, request_id):
         payment = {"provider": "razorpay", "status": status, "provider_order_id": order["id"], "updated_at": now()}
         await db.transactions.update_one({"_id": tx["_id"]}, {"$set": {"payment": payment, "updated_at": now()}})
         if status == "succeeded":
-            await audit(workspace_id, {"type": "system", "id": "razorpay"}, "payment.succeeded", "transaction", transaction_id, request_id, {"provider_order_id": order["id"]})
+            await audit(workspace_id, {"type": "system", "id": "razorpay"}, "payment.succeeded", "transaction", transaction_id, request_id, {"razorpay_response": payment})
         if settings.payment_mode == "razorpay" and status == "processing":
             return {**payment, "checkout": {"key_id": settings.razorpay_key_id, "order_id": order["id"], "amount": tx["amount"]["minor"], "currency": tx["amount"]["currency"]}}
         return payment

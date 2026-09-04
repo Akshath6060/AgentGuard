@@ -5,6 +5,20 @@ def _check(code, result, observed=None, threshold=None, explanation=""):
 def evaluate(rules, request, spend, recent_failures=0):
     checks = []
     amount = request["amount"]
+    vendor_status = request["merchant"].get("verification_status", "verified")
+    if vendor_status in {"blocked", "suspicious"}:
+        checks.append(_check("VENDOR_BLOCKED", "block", vendor_status, explanation="Vendor is blocked or marked suspicious."))
+    elif vendor_status in {"unverified", "new"}:
+        checks.append(_check("VENDOR_UNVERIFIED", "review", vendor_status, explanation="Unverified and newly added vendors require human review."))
+    else:
+        checks.append(_check("VENDOR_VERIFIED", "pass", vendor_status, explanation="Vendor verification passed."))
+    if request.get("duplicate_payment"):
+        checks.append(_check("DUPLICATE_PAYMENT", "block", True, explanation="A matching recent payment was detected."))
+    allowed_currencies = {x.upper() for x in rules.get("allowed_currencies", ["INR"])}
+    currency = request.get("currency", "INR")
+    checks.append(_check("CURRENCY_ALLOWED", "pass" if currency in allowed_currencies else "block", currency, sorted(allowed_currencies), "Currency is permitted." if currency in allowed_currencies else "Currency is not authorized."))
+    allowed_types = set(rules.get("allowed_payment_types", ["one_time", "subscription", "refund"]))
+    checks.append(_check("PAYMENT_TYPE_ALLOWED", "pass" if request.get("payment_type", "one_time") in allowed_types else "block", request.get("payment_type", "one_time"), sorted(allowed_types), "Payment type evaluated."))
     limits = rules.get("limits", {})
     for code, key, observed in [
         ("TRANSACTION_LIMIT", "per_transaction", amount),
@@ -39,4 +53,3 @@ def evaluate(rules, request, spend, recent_failures=0):
         checks.append(_check("REPEATED_FAILURES", rules.get("repeated_failures", {}).get("action", "review"), recent_failures, threshold, "Recent failed attempts reached the configured threshold."))
     outcome = "block" if any(c["result"] == "block" for c in checks) else "review" if any(c["result"] == "review" for c in checks) else "pass"
     return {"result": outcome, "checks": checks}
-

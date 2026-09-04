@@ -4,7 +4,7 @@ import { ArrowRight, CheckBold, Razorpay } from '../components/Icons'
 import { api, openRazorpayCheckout } from '../api/client'
 
 const RING = 2 * Math.PI * 16.5
-const PIPE_LABELS = ['Agent Request', 'Intent Analysis', 'Policy Check', 'Risk Analysis', 'Payment Decision']
+const PIPE_LABELS = ['Request', 'Agent Auth', 'Guardrails', 'Policy Retrieval', 'RAG Analysis', 'Risk Decision']
 
 export default function TransactionDetail({ txId, onBack, onToast, onChanged, checkoutCustomer }) {
   const [pipe, setPipe] = useState(0)
@@ -17,7 +17,7 @@ export default function TransactionDetail({ txId, onBack, onToast, onChanged, ch
     setPipe(0)
     timer.current = setInterval(() => {
       setPipe((p) => {
-        if (p >= 5) {
+        if (p >= PIPE_LABELS.length) {
           clearInterval(timer.current)
           return p
         }
@@ -69,6 +69,9 @@ export default function TransactionDetail({ txId, onBack, onToast, onChanged, ch
   const score = d.score
   const scoreColor = score >= 70 ? '#DC2626' : score >= 40 ? '#D97706' : '#16A34A'
   const statusUpper = tx.status === 'Review' ? 'NEEDS APPROVAL' : tx.status.toUpperCase()
+  const evidence = raw.rag?.retrieved_policies || []
+  const analysis = raw.rag?.analysis
+  const timeline = [{step:'transaction_requested',detail:'Payment authorization received'},...(raw.trace||[]),{step:'final_state',detail:title(raw.decision_state)}]
 
   return (
     <div className="ag-rise">
@@ -157,14 +160,14 @@ export default function TransactionDetail({ txId, onBack, onToast, onChanged, ch
                     className="ag-avatar"
                     style={{
                       width: 16, height: 16, borderRadius: '50%',
-                      background: done ? (i === 4 ? scoreColor : '#16A34A') : '#D1D5DB',
+                      background: done ? (i === PIPE_LABELS.length - 1 ? scoreColor : '#16A34A') : '#D1D5DB',
                     }}
                   >
                     <CheckBold />
                   </span>
                   <span style={{ fontSize: 12.5, fontWeight: 500, color: done ? '#111827' : '#9CA3AF' }}>{label}</span>
                 </div>
-                <span style={{ color: '#D1D5DB', fontSize: 13 }}>{i < 4 ? '→' : ''}</span>
+                <span style={{ color: '#D1D5DB', fontSize: 13 }}>{i < PIPE_LABELS.length - 1 ? '→' : ''}</span>
               </div>
             )
           })}
@@ -205,6 +208,20 @@ export default function TransactionDetail({ txId, onBack, onToast, onChanged, ch
           </div>
 
           <div className="ag-card ag-card-pad">
+            <h2 className="ag-h2-lg" style={{marginBottom:4}}>Why this decision?</h2>
+            <p className="ag-note" style={{marginTop:0}}>Deterministic controls remain authoritative; AI policy analysis is supporting evidence.</p>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,margin:'16px 0'}}>{[['Decision',statusUpper],['Risk score',`${score}/100`],['Risk level',title(raw.risk?.band)]].map(([label,value])=><div key={label} style={{padding:12,background:'#FAFAFB',borderRadius:8}}><div className="ag-eyebrow">{label}</div><strong style={{fontSize:13,color:label==='Decision'?scoreColor:'#111827'}}>{value}</strong></div>)}</div>
+            <h3 style={{fontSize:13.5}}>Reasons</h3><ul style={{fontSize:13,color:'#4B5563',lineHeight:1.7}}>{(analysis?.reasons?.length?analysis.reasons:raw.reason_codes||[]).map(x=><li key={x}>{title(x)}</li>)}</ul>
+            <h3 style={{fontSize:13.5}}>Evidence used</h3>{evidence.length?evidence.map((item)=><div key={`${item.policy_id}-${item.chunk_index}`} style={{padding:'12px 0',borderTop:'1px solid #F3F4F6'}}><div style={{display:'flex',justifyContent:'space-between',gap:10}}><strong style={{fontSize:13}}>{item.policy_title}</strong><span className="ag-mono" style={{fontSize:11,color:'#4F46E5'}}>{Number(item.similarity_score||0).toFixed(3)}</span></div><p style={{fontSize:12.5,color:'#6B7280',lineHeight:1.55,marginBottom:0}}>“{item.text}”</p></div>):<p className="ag-note">No semantic policy evidence was available; deterministic guardrails were used.</p>}
+          </div>
+
+          <div className="ag-card ag-card-pad">
+            <h2 className="ag-h2-lg">AI Policy Reasoning</h2><span className="ag-eyebrow">TRANSACTION QUERY</span><p style={{fontSize:13,lineHeight:1.55}}>{raw.rag?.query||'Legacy transaction — no RAG query recorded.'}</p>
+            <span className="ag-eyebrow">LLM ANALYSIS</span><p style={{fontSize:13,lineHeight:1.55}}>{analysis?.summary||'No LLM analysis recorded.'}</p>
+            {analysis&&<div className="ag-code-panel"><pre>{JSON.stringify(analysis,null,2)}</pre></div>}
+          </div>
+
+          <div className="ag-card ag-card-pad">
             <h2 className="ag-h2-lg" style={{ marginBottom: 14 }}>Agent Intent</h2>
             <p style={{ margin: '0 0 14px', fontSize: 13.5, color: '#4B5563', lineHeight: 1.55 }}>{d.intent}</p>
             <div style={{ borderLeft: '2px solid #4F46E5', padding: '2px 0 2px 14px' }}>
@@ -214,6 +231,8 @@ export default function TransactionDetail({ txId, onBack, onToast, onChanged, ch
               </p>
             </div>
           </div>
+
+          <div className="ag-card ag-card-pad"><h2 className="ag-h2" style={{marginBottom:12}}>Decision Timeline</h2>{timeline.map((item,i)=><div key={`${item.step}-${i}`} style={{display:'grid',gridTemplateColumns:'18px 1fr',gap:9,paddingBottom:12}}><span style={{width:9,height:9,borderRadius:'50%',background:i===timeline.length-1?scoreColor:'#4F46E5',marginTop:4}}/><div><div style={{fontSize:13,fontWeight:500}}>{title(item.step)}</div>{item.detail&&<div className="ag-note">{item.detail}</div>}</div></div>)}</div>
         </div>
 
         <div className="ag-col">

@@ -1,15 +1,21 @@
 from datetime import datetime
 import re
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from ..database import db
-from ..security import current_user
+from ..security import current_user, agent_identity
 from ..utils import clean
+from ..schemas import AuthorizationRequest
+from ..services.authorization_service import authorize
+from ..services.rag.rate_limit import ai_rate_limit
 
 router=APIRouter(prefix="/v1/transactions",tags=["transactions"])
 def actions(tx,role):
     result=["view"]
     if tx.get("decision_state")=="review_pending" and role in {"admin","approver"}: result += ["approve","reject"]
     return result
+@router.post("/evaluate",dependencies=[Depends(ai_rate_limit)])
+async def evaluate_transaction(body:AuthorizationRequest,request:Request,credential=Depends(agent_identity)):
+    return await authorize(body.model_dump(),credential,request.state.request_id)
 @router.get("")
 async def list_transactions(q:str|None=None,agent_id:str|None=None,decision:str|None=None,risk_band:str|None=None,status:str|None=None,from_date:datetime|None=None,to_date:datetime|None=None,limit:int=Query(50,ge=1,le=200),cursor:datetime|None=None,user=Depends(current_user)):
     query={"workspace_id":user["workspace_id"]}
@@ -45,3 +51,13 @@ async def detail(transaction_id:str,user=Depends(current_user)):
     if not tx:raise HTTPException(404,"Transaction not found")
     agent=await db.agents.find_one({"workspace_id":user["workspace_id"],"agent_id":tx["agent_id"]})
     return {**clean(tx),"agent_name":agent.get("name",tx["agent_id"]) if agent else tx["agent_id"],"allowed_actions":actions(tx,user["role"])}
+@router.get("/{transaction_id}/risk-analysis")
+async def risk_analysis(transaction_id:str,user=Depends(current_user)):
+    tx=await db.transactions.find_one({"workspace_id":user["workspace_id"],"transaction_id":transaction_id},{"_id":0,"transaction_id":1,"risk":1,"decision":1,"reason_codes":1,"policy_evaluation.checks":1,"rag.analysis":1,"trace":1})
+    if not tx: raise HTTPException(404,"Transaction not found")
+    return clean(tx)
+@router.get("/{transaction_id}/evidence")
+async def evidence(transaction_id:str,user=Depends(current_user)):
+    tx=await db.transactions.find_one({"workspace_id":user["workspace_id"],"transaction_id":transaction_id},{"_id":0,"transaction_id":1,"rag.query":1,"rag.retrieved_policies":1})
+    if not tx: raise HTTPException(404,"Transaction not found")
+    return clean(tx)

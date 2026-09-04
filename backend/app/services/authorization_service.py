@@ -1,24 +1,29 @@
 from datetime import timedelta
 from time import perf_counter
+import re
 from fastapi import HTTPException
 from pymongo.errors import DuplicateKeyError
 from ..database import db
 from ..utils import now, public_id, clean
 from .audit_service import audit
 from .policy_engine import evaluate
-from .risk_engine import assess
+from .risk_engine import assess, hybrid
 from .payment_service import initiate
+from .rag.retrieval_service import retrieve, transaction_query
+from .rag.policy_analysis_service import analyze
 
 
 async def _history(workspace_id, agent_id, req):
     merchant = req["merchant"]["name"]
     category = req["merchant"]["category"]
     since = now() - timedelta(days=30)
-    merchant_known = await db.transactions.find_one({"workspace_id": workspace_id, "merchant.name": {"$regex": f"^{merchant}$", "$options": "i"}, "payment.status": "succeeded"}) is not None
+    exact_merchant=f"^{re.escape(merchant)}$"
+    merchant_known = await db.transactions.find_one({"workspace_id": workspace_id, "merchant.name": {"$regex": exact_merchant, "$options": "i"}, "payment.status": "succeeded"}) is not None
     category_known = await db.transactions.find_one({"workspace_id": workspace_id, "agent_id": agent_id, "merchant.category": category}) is not None
     recent_failures = await db.transactions.count_documents({"workspace_id": workspace_id, "agent_id": agent_id, "decision": "blocked", "created_at": {"$gte": since}})
     attempts = await db.transactions.count_documents({"workspace_id": workspace_id, "agent_id": agent_id, "merchant.name": merchant, "created_at": {"$gte": now() - timedelta(hours=1)}})
-    return {"merchant_known": merchant_known, "category_known": category_known, "recent_failures": recent_failures, "same_merchant_attempts": attempts, "normal_pattern": merchant_known and req["amount"] < 1_000_000}
+    duplicate = await db.transactions.find_one({"workspace_id":workspace_id,"agent_id":agent_id,"merchant.name":{"$regex":exact_merchant,"$options":"i"},"amount.minor":req["amount"],"created_at":{"$gte":now()-timedelta(minutes=10)},"decision_state":{"$in":["approved","approved_by_human","review_pending"]}}) is not None
+    return {"merchant_known": merchant_known, "category_known": category_known, "recent_failures": recent_failures, "same_merchant_attempts": attempts, "duplicate_payment":duplicate, "normal_pattern": merchant_known and req["amount"] < 1_000_000}
 
 
 async def _spend(workspace_id, agent_id):
@@ -63,22 +68,34 @@ async def authorize(req, credential, request_id):
     trace.append({"step": "policy_resolution", "duration_ms": round((perf_counter() - mark) * 1000, 3)})
     history = await _history(workspace_id, agent_id, req); spend = await _spend(workspace_id, agent_id)
     req["merchant_known"] = history["merchant_known"]
+    req["duplicate_payment"] = history["duplicate_payment"]
     mark = perf_counter(); policy_result = evaluate(policy["rules"], req, spend, history["recent_failures"])
     trace.append({"step": "policy_evaluation", "duration_ms": round((perf_counter() - mark) * 1000, 3)})
-    mark = perf_counter(); risk = assess(req, policy["rules"], history)
-    trace.append({"step": "risk_assessment", "duration_ms": round((perf_counter() - mark) * 1000, 3)})
-    decision = "blocked" if policy_result["result"] == "block" or risk["band"] == "high" else "review" if policy_result["result"] == "review" or risk["band"] == "medium" else "approved"
+    mark = perf_counter(); transaction_risk = assess(req, policy["rules"], history)
+    trace.append({"step": "vendor_and_behavioral_risk", "duration_ms": round((perf_counter() - mark) * 1000, 3)})
+    query=transaction_query(agent,req,history); retrieved=[]
+    try: retrieved=await retrieve(workspace_id,query)
+    except Exception: pass
+    trace.append({"step":"policy_retrieval","detail":f"{len(retrieved)} relevant policy chunks retrieved","duration_ms":round((perf_counter()-mark)*1000,3)})
+    if policy_result["result"] == "block":
+        rag_analysis={"decision":"BLOCK","riskScore":transaction_risk["score"],"summary":"Authoritative deterministic rule blocked the transaction; LLM analysis was skipped.","reasons":[],"policyViolations":[],"requiredApprovals":[],"recommendation":"Do not execute payment.","confidence":1.0}
+    else:
+        rag_analysis=await analyze({k:v for k,v in req.items() if k!="metadata"},retrieved)
+    trace.append({"step":"rag_policy_analysis","detail":rag_analysis["summary"],"duration_ms":round((perf_counter()-mark)*1000,3)})
+    risk=hybrid(policy_result,transaction_risk,rag_analysis); decision=risk.pop("decision")
+    trace.append({"step":"final_risk_decision","detail":f"{risk['score']}/100 {risk['band']} — {decision}","duration_ms":round((perf_counter()-mark)*1000,3)})
     state = {"approved": "approved", "review": "review_pending", "blocked": "blocked"}[decision]
     reason_codes = [c["code"] for c in policy_result["checks"] if c["result"] != "pass"] or [s["code"] for s in risk["signals"] if s["triggered"] and s["weight"] > 0] or ["WITHIN_LIMIT", "CATEGORY_ALLOWED"]
     approval_summary = None
     if decision == "review":
         approval_summary = {"approval_id": public_id("apr"), "status": "pending", "expires_at": now() + timedelta(hours=24)}
-    document = {**placeholder, "amount": {"minor": req["amount"], "currency": req["currency"]}, "merchant": req["merchant"], "purpose": req["purpose"], "intent": req["intent"], "metadata": req["metadata"], "policy_evaluation": {"policy_id": policy["policy_id"], "policy_version": policy["version"], "policy_snapshot": policy["rules"], "checks": policy_result["checks"]}, "risk": risk, "decision": decision, "decision_state": state, "reason_codes": reason_codes, "approval": approval_summary, "payment": {"provider": "razorpay", "status": "not_initiated"}, "allowed_actions": ["view"], "trace": trace, "total_decision_latency_ms": round((perf_counter() - start) * 1000, 3), "updated_at": now()}
+    document = {**placeholder, "amount": {"minor": req["amount"], "currency": req["currency"]}, "merchant": req["merchant"], "purpose": req["purpose"], "payment_type":req.get("payment_type","one_time"), "intent": req["intent"], "metadata": req["metadata"], "policy_evaluation": {"policy_id": policy["policy_id"], "policy_version": policy["version"], "policy_snapshot": policy["rules"], "checks": policy_result["checks"]}, "rag":{"query":query,"retrieved_policies":retrieved,"analysis":rag_analysis}, "risk": risk, "decision": decision, "decision_state": state, "reason_codes": reason_codes, "approval": approval_summary, "payment": {"provider": "razorpay", "status": "not_initiated"}, "allowed_actions": ["view"], "trace": trace, "total_decision_latency_ms": round((perf_counter() - start) * 1000, 3), "updated_at": now()}
     await db.transactions.replace_one({"_id": placeholder["_id"]}, document)
     if approval_summary:
-        await db.approvals.insert_one({**approval_summary, "transaction_id": transaction_id, "workspace_id": workspace_id, "reason_codes": reason_codes, "requested_at": received, "created_at": received, "decided_by": None, "decided_at": None, "comment": None, "version": 1})
+        await db.approvals.insert_one({**approval_summary, "transaction_id": transaction_id, "workspace_id": workspace_id, "requested_by_agent":agent_id,"reason":"; ".join(reason_codes),"risk_score":risk["score"],"policies_used":[p["policy_id"] for p in retrieved],"approval_status":"PENDING", "reason_codes": reason_codes, "requested_at": received, "created_at": received, "decided_by": None, "decided_at": None,"approved_by":None,"approved_at":None,"rejected_by":None,"rejected_at":None,"rejection_reason":None, "comment": None, "version": 1})
     action = {"approved": "authorization.approved", "review": "authorization.review_required", "blocked": "authorization.blocked"}[decision]
     await audit(workspace_id, {"type": "agent", "id": agent_id}, action, "transaction", transaction_id, request_id, {"reason_codes": reason_codes})
+    await db.decision_audits.insert_one({"transaction_id":transaction_id,"agent_id":agent_id,"workspace_id":workspace_id,"organization_id":workspace_id,"timestamp":now(),"transaction_details":{"amount":document["amount"],"merchant":document["merchant"],"purpose":document["purpose"]},"deterministic_rule_results":policy_result["checks"],"retrieved_policy_ids":[p["policy_id"] for p in retrieved],"retrieved_policy_titles":[p["policy_title"] for p in retrieved],"relevant_policy_snippets":[p["text"] for p in retrieved],"rag_analysis":rag_analysis,"risk_score":risk["score"],"final_decision":decision,"approval_status":approval_summary["status"] if approval_summary else None,"razorpay_response":None,"created_at":now()})
     if decision == "approved":
         document["payment"] = await initiate(transaction_id, workspace_id, {"type": "agent", "id": agent_id}, request_id)
     return response(document)

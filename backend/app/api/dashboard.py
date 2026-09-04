@@ -14,6 +14,8 @@ async def overview(range:str="7d",user=Depends(current_user)):
         "review":{"$sum":{"$cond":[{"$eq":["$decision","review"]},1,0]}},
         "blocked":{"$sum":{"$cond":[{"$eq":["$decision","blocked"]},1,0]}},
         "approved_spend":{"$sum":{"$cond":[{"$in":["$decision_state",["approved","approved_by_human"]]},"$amount.minor",0]}},
+        "average_risk_score":{"$avg":"$risk.score"},
+        "high_risk_transactions":{"$sum":{"$cond":[{"$in":["$risk.band",["high","critical"]]},1,0]}},
     }
     totals=await (await db.transactions.aggregate([{"$match":match},{"$group":group}])).to_list(1)
     risk=await (await db.transactions.aggregate([{"$match":match},{"$group":{"_id":"$risk.band","count":{"$sum":1}}}])).to_list(10)
@@ -24,4 +26,5 @@ async def overview(range:str="7d",user=Depends(current_user)):
     base=totals[0] if totals else {"total":0,"approved":0,"review":0,"blocked":0,"approved_spend":0}
     risk_days={}
     for row in risk_trend:risk_days.setdefault(row["_id"]["date"],{"date":row["_id"]["date"],"low":0,"medium":0,"high":0})[row["_id"]["band"]]=row["count"]
-    return {**clean(base),"currency":"INR","risk_distribution":{r["_id"]:r["count"] for r in risk if r["_id"]},"risk_trend":list(risk_days.values()),"reason_distribution":[{"code":x["_id"],"count":x["count"]} for x in reasons],"approval_pending":await db.approvals.count_documents({"workspace_id":user["workspace_id"],"status":"pending"}),"recent_activity":clean(recent),"spend_trend":[{"date":x["_id"],"amount_minor":x["amount"],"count":x["count"]} for x in trend]}
+    recent_decisions=await db.transactions.find(match,{"transaction_id":1,"agent_id":1,"merchant":1,"amount":1,"risk":1,"decision":1,"created_at":1}).sort("created_at",-1).limit(8).to_list(8)
+    return {**clean(base),"currency":"INR","risk_distribution":{r["_id"]:r["count"] for r in risk if r["_id"]},"risk_trend":list(risk_days.values()),"reason_distribution":[{"code":x["_id"],"count":x["count"]} for x in reasons],"approval_pending":await db.approvals.count_documents({"workspace_id":user["workspace_id"],"status":"pending"}),"active_policies":await db.policies.count_documents({"workspace_id":user["workspace_id"],"status":"active"}),"recent_ai_decisions":clean(recent_decisions),"recent_activity":clean(recent),"spend_trend":[{"date":x["_id"],"amount_minor":x["amount"],"count":x["count"]} for x in trend]}

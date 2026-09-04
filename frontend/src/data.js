@@ -8,6 +8,7 @@ export const RISK = {
   Low: { bg: '#DCFCE7', fg: '#15803D' },
   Medium: { bg: '#FEF3C7', fg: '#B45309' },
   High: { bg: '#FEE2E2', fg: '#B91C1C' },
+  Critical: { bg: '#7F1D1D', fg: '#FFFFFF' },
 }
 
 export const STAT = {
@@ -21,6 +22,8 @@ export const STAT = {
   Active: { bg: '#DCFCE7', fg: '#15803D' },
   Paused: { bg: '#F3F4F6', fg: '#6B7280' },
   Draft: { bg: '#F3F4F6', fg: '#6B7280' },
+  Disabled: { bg: '#F3F4F6', fg: '#6B7280' },
+  Superseded: { bg: '#F3F4F6', fg: '#6B7280' },
 }
 
 export const AV = [
@@ -178,7 +181,7 @@ export const GENERATED_RULES = [
 
 export const PAGE_TITLES = {
   overview: 'Overview', agents: 'AI Agents', agentProfile: 'Agent Profile', transactions: 'Transactions',
-  detail: 'Transaction Analysis', approvals: 'Approval Center', policies: 'Policies', risk: 'Risk Center',
+  detail: 'Transaction Analysis', approvals: 'Approval Center', policies: 'Policy Intelligence', risk: 'Risk Center',
   audit: 'Audit Logs', admin: 'Workspace Admin', developers: 'Developers', settings: 'Settings',
 }
 

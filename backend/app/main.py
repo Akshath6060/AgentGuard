@@ -9,7 +9,7 @@ from .config import get_settings
 from .database import ensure_indexes,client,db
 from .errors import http_error,unexpected_error,validation_error
 from .utils import public_id
-from .api import auth,agents,policies,authorizations,transactions,approvals,audit,api_keys,dashboard,payments,workspaces
+from .api import auth,agents,policies,authorizations,transactions,approvals,audit,api_keys,dashboard,payments,workspaces,rag
 
 settings=get_settings()
 @asynccontextmanager
@@ -29,7 +29,7 @@ async def request_context(request:Request,call_next):
     if settings.is_production:response.headers["Strict-Transport-Security"]="max-age=31536000; includeSubDomains"
     return response
 app.add_exception_handler(HTTPException,http_error);app.add_exception_handler(RequestValidationError,validation_error);app.add_exception_handler(Exception,unexpected_error)
-for module in [auth,workspaces,agents,policies,authorizations,transactions,approvals,audit,api_keys,dashboard,payments]:app.include_router(module.router)
+for module in [auth,workspaces,agents,policies,rag,authorizations,transactions,approvals,audit,api_keys,dashboard,payments]:app.include_router(module.router)
 @app.get("/health",include_in_schema=False)
 async def health():return {"status":"ok","service":"agentguard-api"}
 @app.get("/ready",include_in_schema=False)

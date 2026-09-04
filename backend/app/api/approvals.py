@@ -56,7 +56,10 @@ async def decide(approval_id:str,body:ApprovalDecision,request:Request,user=Depe
         spend=await _spend(user["workspace_id"],tx["agent_id"]); limits=tx.get("policy_evaluation",{}).get("policy_snapshot",{}).get("limits",{}); amount=tx["amount"]["minor"]
         if (limits.get("daily") is not None and spend["daily"]+amount>limits["daily"]) or (limits.get("monthly") is not None and spend["monthly"]+amount>limits["monthly"]):raise HTTPException(409,"Spending availability changed; approval can no longer be completed")
     new_status="approved" if body.decision=="approve" else "rejected"
-    approval=await db.approvals.find_one_and_update({"_id":existing["_id"],"status":"pending","version":body.version},{"$set":{"status":new_status,"decided_by":user["user_id"],"decided_at":now(),"comment":body.comment},"$inc":{"version":1}},return_document=ReturnDocument.AFTER)
+    decision_fields={"status":new_status,"approval_status":new_status.upper(),"decided_by":user["user_id"],"decided_at":now(),"comment":body.comment}
+    if body.decision=="approve": decision_fields.update({"approved_by":user["user_id"],"approved_at":now()})
+    else: decision_fields.update({"rejected_by":user["user_id"],"rejected_at":now(),"rejection_reason":body.comment})
+    approval=await db.approvals.find_one_and_update({"_id":existing["_id"],"status":"pending","version":body.version},{"$set":decision_fields,"$inc":{"version":1}},return_document=ReturnDocument.AFTER)
     if not approval:raise HTTPException(409,"This approval has already been decided")
     state="approved_by_human" if body.decision=="approve" else "rejected_by_human"
     updated=await db.transactions.update_one({"_id":tx["_id"],"decision_state":"review_pending"},{"$set":{"decision_state":state,"approval.status":new_status,"updated_at":now()}})

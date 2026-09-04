@@ -7,7 +7,7 @@ const MONITOR = [
 ]
 
 const CONTROL = [
-  { id: 'policies', label: 'Policies', Icon: Shield },
+  { id: 'policies', label: 'Policy Intelligence', Icon: Shield },
   { id: 'approvals', label: 'Approvals', Icon: CircleCheck, count: 3 },
   { id: 'risk', label: 'Risk Center', Icon: ShieldAlert },
   { id: 'audit', label: 'Audit Logs', Icon: Doc },

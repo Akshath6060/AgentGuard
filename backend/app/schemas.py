@@ -1,4 +1,5 @@
 from typing import Any, Literal
+import re
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
@@ -68,13 +69,35 @@ class PolicyRules(BaseModel):
 
 class PolicyCreate(BaseModel):
     name: str = Field(min_length=2, max_length=100)
-    rules: PolicyRules
+    description: str = Field(default="", max_length=500)
+    category: Literal["payment", "security", "agent", "vendor", "approval", "finance", "subscription", "refund", "other"] = "other"
+    content: str = Field(default="", max_length=200_000)
+    rules: PolicyRules = PolicyRules()
     source_text: str | None = None
+
+    @field_validator("name", "description", "content", "source_text")
+    @classmethod
+    def strip_policy_text(cls, value):
+        return re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", "", value).strip() if isinstance(value, str) else value
 
 
 class PolicyVersionCreate(BaseModel):
     rules: PolicyRules
     source_text: str | None = None
+
+
+class PolicyPatch(BaseModel):
+    name: str | None = Field(None, min_length=2, max_length=100)
+    description: str | None = Field(None, max_length=500)
+    category: Literal["payment", "security", "agent", "vendor", "approval", "finance", "subscription", "refund", "other"] | None = None
+    content: str | None = Field(None, max_length=200_000)
+    rules: PolicyRules | None = None
+    status: Literal["draft", "active", "disabled"] | None = None
+
+    @field_validator("name", "description", "content")
+    @classmethod
+    def strip_policy_patch_text(cls, value):
+        return re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", "", value).strip() if isinstance(value, str) else value
 
 
 class PolicyDraft(BaseModel):
@@ -85,6 +108,7 @@ class Merchant(BaseModel):
     name: str = Field(min_length=1, max_length=160)
     category: str = Field(min_length=1, max_length=80)
     country: str = Field(min_length=2, max_length=2)
+    verification_status: Literal["verified", "unverified", "new", "blocked", "suspicious"] = "unverified"
 
     @field_validator("country")
     @classmethod
@@ -106,11 +130,25 @@ class AuthorizationRequest(BaseModel):
     intent: Intent = Intent()
     idempotency_key: str = Field(min_length=3, max_length=128)
     metadata: dict[str, Any] = {}
+    payment_type: Literal["one_time", "subscription", "refund"] = "one_time"
 
     @field_validator("currency")
     @classmethod
     def currency_upper(cls, value):
         return value.upper()
+
+    @field_validator("metadata")
+    @classmethod
+    def reject_payment_secrets(cls, value):
+        forbidden={"card","card_number","pan","cvv","cvc","expiry","razorpay_key_secret"}
+        if any(str(key).lower() in forbidden for key in value):
+            raise ValueError("Sensitive payment credentials must not be included in metadata")
+        return value
+
+
+class RAGSearchRequest(BaseModel):
+    query: str = Field(min_length=3, max_length=2000)
+    limit: int = Field(default=5, ge=1, le=20)
 
 
 class ApprovalDecision(BaseModel):

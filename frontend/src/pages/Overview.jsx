@@ -31,10 +31,13 @@ export default function Overview({ data, transactions = [], agents = [], onRange
   const riskPct = (band) => Math.round(((data?.risk_distribution?.[band] || 0) * 100) / riskTotal)
 
   const stats = data ? [
-    { label: 'Active Agents', value: String(agents.filter((a) => a.status === 'active').length), meta: `${agents.length} total` },
-    { label: "Approved Agent Spend", value: new Intl.NumberFormat('en-IN', { style: 'currency', currency: data.currency || 'INR', maximumFractionDigits: 0 }).format((data.approved_spend || 0) / 100), meta: `${data.total || 0} requests` },
-    { label: 'Blocked Transactions', value: String(data.blocked || 0), valueColor: '#DC2626', meta: 'prevented before payment' },
-    { label: 'Pending Approvals', value: String(data.approval_pending || 0), valueColor: '#D97706', meta: 'requires a human' },
+    { label: 'Total Agent Transactions', value: String(data.total || 0), meta: `${agents.filter((a) => a.status === 'active').length} active agents` },
+    { label: 'Allowed', value: String(data.approved || 0), valueColor: '#16A34A', meta: 'autonomous decisions' },
+    { label: 'Approval Required', value: String(data.review || 0), valueColor: '#D97706', meta: `${data.approval_pending || 0} pending` },
+    { label: 'Blocked', value: String(data.blocked || 0), valueColor: '#DC2626', meta: 'provider never called' },
+    { label: 'Average Risk Score', value: String(Math.round(data.average_risk_score || 0)), meta: 'out of 100' },
+    { label: 'High Risk Transactions', value: String(data.high_risk_transactions || 0), valueColor: '#DC2626', meta: 'high and critical' },
+    { label: 'Active Policies', value: String(data.active_policies || 0), valueColor: '#4F46E5', meta: 'RAG knowledge base' },
   ] : [{ label: 'Active Agents', value: '—', meta: 'Loading' }, { label: 'Approved Agent Spend', value: '—', meta: 'Loading' }, { label: 'Blocked Transactions', value: '—', meta: 'Loading' }, { label: 'Pending Approvals', value: '—', meta: 'Loading' }]
   const activity = transactions.slice(0, 5).map((raw, index) => { const status = raw.decision_state === 'approved_by_human' ? 'Human Approved' : raw.decision_state === 'rejected_by_human' ? 'Rejected' : raw.decision === 'review' ? 'Review' : (raw.decision || '').replace(/^./, x => x.toUpperCase()); const t = { id: raw.transaction_id, agent: raw.agent_name || raw.agent_id, merchant: raw.merchant?.name, amount: new Intl.NumberFormat('en-IN', { style: 'currency', currency: raw.amount?.currency || 'INR', maximumFractionDigits: 0 }).format((raw.amount?.minor || 0) / 100), risk: (raw.risk?.band || 'low').replace(/^./, x => x.toUpperCase()), status, ago: new Date(raw.created_at).toLocaleString(), av: index % 4 }; return ({
     ...t,
@@ -130,7 +133,7 @@ export default function Overview({ data, transactions = [], agents = [], onRange
               <text x="21" y="25.4" textAnchor="middle" fontSize="3.1" fill="#6B7280" fontFamily="Inter">low risk</text>
             </svg>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
-              {[['Low Risk', `${riskPct('low')}%`, '#16A34A'], ['Medium Risk', `${riskPct('medium')}%`, '#D97706'], ['High Risk', `${riskPct('high')}%`, '#DC2626']].map(
+              {[['Low Risk', `${riskPct('low')}%`, '#16A34A'], ['Medium Risk', `${riskPct('medium')}%`, '#D97706'], ['High / Critical', `${riskPct('high') + riskPct('critical')}%`, '#DC2626']].map(
                 ([label, pct, color]) => (
                   <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ width: 8, height: 8, borderRadius: 2, background: color }} />
@@ -161,7 +164,7 @@ export default function Overview({ data, transactions = [], agents = [], onRange
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-            <h2 className="ag-h2">Live Agent Activity</h2>
+            <h2 className="ag-h2">Recent AI Decisions</h2>
             <span className="ag-pulse" style={{ width: 6, height: 6, borderRadius: '50%', background: '#16A34A' }} />
           </div>
           <button className="ag-btn-link" onClick={() => onNavigate('transactions')}>View all transactions →</button>
