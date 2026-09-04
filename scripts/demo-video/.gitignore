@@ -1,0 +1,10 @@
+# large intermediates - regenerate with `npm run record` + `npm run build`
+AgentGuard-Razorpay-Buildathon-Demo.mp4
+.audio-segments/
+output/raw/
+output/body.mp4
+output/silent.mp4
+output/card*.mp4
+output/demo-raw.webm
+output/concat.txt
+narration.wav

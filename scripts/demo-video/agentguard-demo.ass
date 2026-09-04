@@ -1,0 +1,90 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1920
+PlayResY: 1080
+WrapStyle: 2
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Helvetica Neue,40,&H00FFFFFF,&H00FFFFFF,&H00101828,&HA6101828,-1,0,0,0,100,100,0,0,3,10,0,2,260,260,54,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:02.91,Default,,0,0,0,,AI agents are starting to spend real money:\Nbooking
+Dialogue: 0,0:00:02.91,0:00:05.65,Default,,0,0,0,,travel, renewing software, and paying\Nsuppliers.
+Dialogue: 0,0:00:05.89,0:00:09.70,Default,,0,0,0,,That creates a hard security problem. An agent\Ncan be prompt-injected,
+Dialogue: 0,0:00:09.70,0:00:13.41,Default,,0,0,0,,its credential can leak, or it can simply make\Nan expensive mistake.
+Dialogue: 0,0:00:13.65,0:00:17.56,Default,,0,0,0,,And the same model that was manipulated should\Nnot be trusted to approve its own payment.
+Dialogue: 0,0:00:17.80,0:00:21.07,Default,,0,0,0,,I built AgentGuard for the Razorpay AI\NBuildathon to put a reliable
+Dialogue: 0,0:00:21.07,0:00:23.66,Default,,0,0,0,,guardrail between an autonomous agent and real\Nmoney.
+Dialogue: 0,0:00:23.90,0:00:28.32,Default,,0,0,0,,Every payment request is authenticated,\Nchecked against deterministic organization
+Dialogue: 0,0:00:28.32,0:00:32.57,Default,,0,0,0,,policy, scored for behavioral risk, and\Nenriched with relevant policy evidence.
+Dialogue: 0,0:00:32.81,0:00:35.58,Default,,0,0,0,,The result is one of three explainable\Ndecisions:
+Dialogue: 0,0:00:35.58,0:00:37.77,Default,,0,0,0,,allow, send for human review, or block.
+Dialogue: 0,0:00:38.01,0:00:41.78,Default,,0,0,0,,The core rule is simple: AI provides\Nintelligence, but deterministic
+Dialogue: 0,0:00:41.78,0:00:44.06,Default,,0,0,0,,security policies retain final authority.
+Dialogue: 0,0:00:44.30,0:00:47.04,Default,,0,0,0,,The AI layer may escalate risk, but it can\Nnever downgrade
+Dialogue: 0,0:00:47.04,0:00:49.64,Default,,0,0,0,,a review or release a payment that a hard rule\Nblocked.
+Dialogue: 0,0:00:49.88,0:00:53.06,Default,,0,0,0,,Here is the working application. I will sign\Nin with the seeded
+Dialogue: 0,0:00:53.06,0:00:55.93,Default,,0,0,0,,demo administrator and enter the isolated test\Nworkspace.
+Dialogue: 0,0:00:56.17,0:01:00.98,Default,,0,0,0,,The dashboard summarizes real records from\NMongoDB: active agents, autonomous
+Dialogue: 0,0:01:00.98,0:01:05.72,Default,,0,0,0,,approvals, review requests, blocks, risk\Ndistribution, and recent decisions.
+Dialogue: 0,0:01:05.96,0:01:09.16,Default,,0,0,0,,AgentGuard is designed to make payment\Ngovernance understandable at
+Dialogue: 0,0:01:09.16,0:01:12.08,Default,,0,0,0,,a glance, without hiding the reasoning behind\Na single score.
+Dialogue: 0,0:01:12.32,0:01:16.18,Default,,0,0,0,,Each agent is attached to an enforcing policy\Nwith per-transaction,
+Dialogue: 0,0:01:16.18,0:01:19.76,Default,,0,0,0,,daily, and monthly limits, permitted\Ncategories, vendor rules,
+Dialogue: 0,0:01:19.76,0:01:22.75,Default,,0,0,0,,geography controls, and repeated-failure\Nthresholds.
+Dialogue: 0,0:01:22.99,0:01:26.70,Default,,0,0,0,,Alongside those deterministic rules, policy\Ndocuments are cleaned,
+Dialogue: 0,0:01:26.70,0:01:29.74,Default,,0,0,0,,chunked, embedded, and indexed for semantic\Nretrieval.
+Dialogue: 0,0:01:29.98,0:01:33.51,Default,,0,0,0,,This vendor policy says that newly registered\Nor unverified vendors
+Dialogue: 0,0:01:33.51,0:01:36.47,Default,,0,0,0,,require human approval, regardless of\Ntransaction value.
+Dialogue: 0,0:01:36.71,0:01:41.60,Default,,0,0,0,,First, a normal transaction. The Subscription\NBot requests four hundred and ninety-nine\Nrupees
+Dialogue: 0,0:01:41.60,0:01:46.02,Default,,0,0,0,,for Adobe, a known software vendor with\Nsuccessful payment history in this workspace.
+Dialogue: 0,0:01:46.26,0:01:49.61,Default,,0,0,0,,The purpose and agent intent are included so\NAgentGuard can evaluate
+Dialogue: 0,0:01:49.61,0:01:52.61,Default,,0,0,0,,both structured transaction signals and the\Nbusiness context.
+Dialogue: 0,0:01:52.85,0:01:56.92,Default,,0,0,0,,The policy permits the category, the amount is\Ncomfortably inside its limits,
+Dialogue: 0,0:01:56.92,0:02:00.41,Default,,0,0,0,,and the merchant is trusted. The decision is\Nallow, with low risk.
+Dialogue: 0,0:02:00.65,0:02:05.28,Default,,0,0,0,,Only after that approval does the backend\Ncreate a Razorpay order. This is the real\NRazorpay
+Dialogue: 0,0:02:05.28,0:02:09.11,Default,,0,0,0,,checkout in Test Mode; no production\Ncredentials or real funds are involved.
+Dialogue: 0,0:02:09.35,0:02:13.56,Default,,0,0,0,,The browser receives only Razorpay's public\Ntest checkout data. Payment signatures
+Dialogue: 0,0:02:13.56,0:02:17.31,Default,,0,0,0,,are verified server-side before any\Ntransaction can be marked successful.
+Dialogue: 0,0:02:17.55,0:02:23.32,Default,,0,0,0,,Back in AgentGuard, the transaction view shows\Nthe full decision pipeline: agent\Nauthentication,
+Dialogue: 0,0:02:23.32,0:02:27.66,Default,,0,0,0,,guardrails, policy retrieval, RAG analysis,\Nand the final risk decision.
+Dialogue: 0,0:02:27.90,0:02:31.23,Default,,0,0,0,,It also explains the risk signals, every\Ndeterministic check,
+Dialogue: 0,0:02:31.23,0:02:34.40,Default,,0,0,0,,the selected policy version, and the Razorpay\Norder state.
+Dialogue: 0,0:02:34.64,0:02:39.31,Default,,0,0,0,,Now I will try suspicious behavior using the\NProcurement Agent. This is a\Nnine-thousand-rupee
+Dialogue: 0,0:02:39.31,0:02:41.97,Default,,0,0,0,,payment to a new supplier with no successful\Nhistory.
+Dialogue: 0,0:02:42.21,0:02:44.51,Default,,0,0,0,,The amount itself is within the policy limit,\Nbut
+Dialogue: 0,0:02:44.51,0:02:46.76,Default,,0,0,0,,the vendor trust signal is deliberately\Nmissing.
+Dialogue: 0,0:02:47.00,0:02:50.88,Default,,0,0,0,,AgentGuard does not blindly reject the\Npurchase. It returns review, keeps
+Dialogue: 0,0:02:50.88,0:02:54.39,Default,,0,0,0,,payment as not initiated, and routes the case\Nto a human approver.
+Dialogue: 0,0:02:54.63,0:02:57.51,Default,,0,0,0,,The reason codes identify the exact controls:\Nthe vendor
+Dialogue: 0,0:02:57.51,0:02:59.67,Default,,0,0,0,,is unverified and the merchant is unknown.
+Dialogue: 0,0:02:59.91,0:03:03.24,Default,,0,0,0,,The explanation includes policy evidence\Nretrieved specifically
+Dialogue: 0,0:03:03.24,0:03:05.99,Default,,0,0,0,,for this workspace, together with similarity\Nscores.
+Dialogue: 0,0:03:06.23,0:03:10.78,Default,,0,0,0,,The RAG analysis uses that evidence to explain\Nwhy approval is required. Retrieved
+Dialogue: 0,0:03:10.78,0:03:15.22,Default,,0,0,0,,text is evidence, not executable instruction,\Nso it cannot override a hard rule.
+Dialogue: 0,0:03:15.46,0:03:18.70,Default,,0,0,0,,Next I repeat the same pending payment. The\Nagent, merchant,
+Dialogue: 0,0:03:18.70,0:03:20.86,Default,,0,0,0,,and amount match a recent authorization.
+Dialogue: 0,0:03:21.10,0:03:24.61,Default,,0,0,0,,AgentGuard detects the replay and blocks it\Nwith the duplicate payment
+Dialogue: 0,0:03:24.61,0:03:27.72,Default,,0,0,0,,reason code. Razorpay is not contacted for the\Nsecond attempt.
+Dialogue: 0,0:03:27.96,0:03:30.81,Default,,0,0,0,,This is a deterministic hard stop, so the\Nlanguage model is
+Dialogue: 0,0:03:30.81,0:03:33.52,Default,,0,0,0,,skipped and cannot talk the system into\Nreleasing funds.
+Dialogue: 0,0:03:33.76,0:03:37.14,Default,,0,0,0,,Under the hood, the frontend is React nineteen\Nwith Vite, and
+Dialogue: 0,0:03:37.14,0:03:40.35,Default,,0,0,0,,the API is FastAPI with Pydantic and\Nasynchronous PyMongo.
+Dialogue: 0,0:03:40.59,0:03:45.28,Default,,0,0,0,,Authentication uses signed JWT sessions and\Nbcrypt passwords. Agent credentials
+Dialogue: 0,0:03:45.28,0:03:48.84,Default,,0,0,0,,are hashed, revocable, and bound to a single\Nagent identity.
+Dialogue: 0,0:03:49.08,0:03:52.66,Default,,0,0,0,,RAG retrieval is workspace-scoped, using\NMongoDB Atlas vector search
+Dialogue: 0,0:03:52.66,0:03:56.13,Default,,0,0,0,,when available and a local cosine-search\Nfallback for development.
+Dialogue: 0,0:03:56.37,0:04:00.76,Default,,0,0,0,,The payment layer creates Razorpay orders only\Nfor allowed or human-approved decisions,
+Dialogue: 0,0:04:00.76,0:04:04.79,Default,,0,0,0,,then verifies checkout signatures and signed,\Nidempotent webhooks on the server.
+Dialogue: 0,0:04:05.03,0:04:09.03,Default,,0,0,0,,Finally, the audit log records server-side\Nevents for authorization
+Dialogue: 0,0:04:09.03,0:04:12.97,Default,,0,0,0,,requests, policy outcomes, approval changes,\Nand payment activity.
+Dialogue: 0,0:04:13.21,0:04:17.32,Default,,0,0,0,,That gives developers and reviewers a\Ntraceable answer to who requested a payment,
+Dialogue: 0,0:04:17.32,0:04:20.73,Default,,0,0,0,,what policy ran, why the decision happened,\Nand whether money moved.
+Dialogue: 0,0:04:20.97,0:04:23.86,Default,,0,0,0,,AgentGuard helps autonomous systems spend\Nsafely without
+Dialogue: 0,0:04:23.86,0:04:26.32,Default,,0,0,0,,removing useful autonomy from legitimate\Nagents.
+Dialogue: 0,0:04:26.56,0:04:30.77,Default,,0,0,0,,It combines deterministic controls,\Nexplainable risk, policy-grounded AI
+Dialogue: 0,0:04:30.77,0:04:34.74,Default,,0,0,0,,reasoning, human review, and Razorpay Test\NMode in one working flow.
+Dialogue: 0,0:04:34.98,0:04:39.47,Default,,0,0,0,,AI agents get intelligence. They do not get\Nunrestricted authority. Thank you.

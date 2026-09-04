@@ -1,0 +1,278 @@
+{
+  "duration": 279.71342403628114,
+  "segments": [
+    {
+      "scene": "problem",
+      "text": "AI agents are starting to spend real money: booking travel, renewing software, and paying suppliers.",
+      "index": 0,
+      "start": 0,
+      "end": 5.652426303854876
+    },
+    {
+      "scene": "problem",
+      "text": "That creates a hard security problem. An agent can be prompt-injected, its credential can leak, or it can simply make an expensive mistake.",
+      "index": 1,
+      "start": 5.892426303854876,
+      "end": 13.416371882086167
+    },
+    {
+      "scene": "problem",
+      "text": "And the same model that was manipulated should not be trusted to approve its own payment.",
+      "index": 2,
+      "start": 13.65637188208617,
+      "end": 17.56621315192744
+    },
+    {
+      "scene": "problem",
+      "text": "I built AgentGuard for the Razorpay AI Buildathon to put a reliable guardrail between an autonomous agent and real money.",
+      "index": 3,
+      "start": 17.806213151927437,
+      "end": 23.66734693877551
+    },
+    {
+      "scene": "solution",
+      "text": "Every payment request is authenticated, checked against deterministic organization policy, scored for behavioral risk, and enriched with relevant policy evidence.",
+      "index": 4,
+      "start": 23.90734693877551,
+      "end": 32.57736961451247
+    },
+    {
+      "scene": "solution",
+      "text": "The result is one of three explainable decisions: allow, send for human review, or block.",
+      "index": 5,
+      "start": 32.81736961451247,
+      "end": 37.779410430839
+    },
+    {
+      "scene": "solution",
+      "text": "The core rule is simple: AI provides intelligence, but deterministic security policies retain final authority.",
+      "index": 6,
+      "start": 38.019410430839,
+      "end": 44.061179138322
+    },
+    {
+      "scene": "solution",
+      "text": "The AI layer may escalate risk, but it can never downgrade a review or release a payment that a hard rule blocked.",
+      "index": 7,
+      "start": 44.301179138322,
+      "end": 49.64258503401361
+    },
+    {
+      "scene": "login",
+      "text": "Here is the working application. I will sign in with the seeded demo administrator and enter the isolated test workspace.",
+      "index": 8,
+      "start": 49.88258503401361,
+      "end": 55.93882086167801
+    },
+    {
+      "scene": "dashboard",
+      "text": "The dashboard summarizes real records from MongoDB: active agents, autonomous approvals, review requests, blocks, risk distribution, and recent decisions.",
+      "index": 9,
+      "start": 56.178820861678005,
+      "end": 65.72680272108843
+    },
+    {
+      "scene": "dashboard",
+      "text": "AgentGuard is designed to make payment governance understandable at a glance, without hiding the reasoning behind a single score.",
+      "index": 10,
+      "start": 65.96680272108844,
+      "end": 72.08362811791383
+    },
+    {
+      "scene": "policy",
+      "text": "Each agent is attached to an enforcing policy with per-transaction, daily, and monthly limits, permitted categories, vendor rules, geography controls, and repeated-failure thresholds.",
+      "index": 11,
+      "start": 72.32362811791384,
+      "end": 82.75977324263039
+    },
+    {
+      "scene": "policy",
+      "text": "Alongside those deterministic rules, policy documents are cleaned, chunked, embedded, and indexed for semantic retrieval.",
+      "index": 12,
+      "start": 82.9997732426304,
+      "end": 89.74399092970523
+    },
+    {
+      "scene": "policy",
+      "text": "This vendor policy says that newly registered or unverified vendors require human approval, regardless of transaction value.",
+      "index": 13,
+      "start": 89.98399092970523,
+      "end": 96.47460317460319
+    },
+    {
+      "scene": "allow_form",
+      "text": "First, a normal transaction. The Subscription Bot requests four hundred and ninety-nine rupees for Adobe, a known software vendor with successful payment history in this workspace.",
+      "index": 14,
+      "start": 96.71460317460318,
+      "end": 106.02956916099774
+    },
+    {
+      "scene": "allow_form",
+      "text": "The purpose and agent intent are included so AgentGuard can evaluate both structured transaction signals and the business context.",
+      "index": 15,
+      "start": 106.26956916099775,
+      "end": 112.61319727891158
+    },
+    {
+      "scene": "allow_decision",
+      "text": "The policy permits the category, the amount is comfortably inside its limits, and the merchant is trusted. The decision is allow, with low risk.",
+      "index": 16,
+      "start": 112.85319727891158,
+      "end": 120.41587301587303
+    },
+    {
+      "scene": "razorpay",
+      "text": "Only after that approval does the backend create a Razorpay order. This is the real Razorpay checkout in Test Mode; no production credentials or real funds are involved.",
+      "index": 17,
+      "start": 120.65587301587303,
+      "end": 129.11501133786848
+    },
+    {
+      "scene": "razorpay",
+      "text": "The browser receives only Razorpay's public test checkout data. Payment signatures are verified server-side before any transaction can be marked successful.",
+      "index": 18,
+      "start": 129.3550113378685,
+      "end": 137.3124263038549
+    },
+    {
+      "scene": "allow_detail",
+      "text": "Back in AgentGuard, the transaction view shows the full decision pipeline: agent authentication, guardrails, policy retrieval, RAG analysis, and the final risk decision.",
+      "index": 19,
+      "start": 137.55242630385487,
+      "end": 147.66108843537415
+    },
+    {
+      "scene": "allow_detail",
+      "text": "It also explains the risk signals, every deterministic check, the selected policy version, and the Razorpay order state.",
+      "index": 20,
+      "start": 147.90108843537413,
+      "end": 154.40149659863945
+    },
+    {
+      "scene": "review_form",
+      "text": "Now I will try suspicious behavior using the Procurement Agent. This is a nine-thousand-rupee payment to a new supplier with no successful history.",
+      "index": 21,
+      "start": 154.64149659863943,
+      "end": 161.97600907029477
+    },
+    {
+      "scene": "review_form",
+      "text": "The amount itself is within the policy limit, but the vendor trust signal is deliberately missing.",
+      "index": 22,
+      "start": 162.21600907029477,
+      "end": 166.76789115646258
+    },
+    {
+      "scene": "review_decision",
+      "text": "AgentGuard does not blindly reject the purchase. It returns review, keeps payment as not initiated, and routes the case to a human approver.",
+      "index": 23,
+      "start": 167.00789115646256,
+      "end": 174.39020408163262
+    },
+    {
+      "scene": "review_decision",
+      "text": "The reason codes identify the exact controls: the vendor is unverified and the merchant is unknown.",
+      "index": 24,
+      "start": 174.63020408163263,
+      "end": 179.673514739229
+    },
+    {
+      "scene": "rag",
+      "text": "The explanation includes policy evidence retrieved specifically for this workspace, together with similarity scores.",
+      "index": 25,
+      "start": 179.913514739229,
+      "end": 185.99795918367343
+    },
+    {
+      "scene": "rag",
+      "text": "The RAG analysis uses that evidence to explain why approval is required. Retrieved text is evidence, not executable instruction, so it cannot override a hard rule.",
+      "index": 26,
+      "start": 186.23795918367344,
+      "end": 195.22866213151923
+    },
+    {
+      "scene": "duplicate",
+      "text": "Next I repeat the same pending payment. The agent, merchant, and amount match a recent authorization.",
+      "index": 27,
+      "start": 195.46866213151924,
+      "end": 200.86426303854873
+    },
+    {
+      "scene": "duplicate",
+      "text": "AgentGuard detects the replay and blocks it with the duplicate payment reason code. Razorpay is not contacted for the second attempt.",
+      "index": 28,
+      "start": 201.1042630385487,
+      "end": 207.7203174603174
+    },
+    {
+      "scene": "duplicate",
+      "text": "This is a deterministic hard stop, so the language model is skipped and cannot talk the system into releasing funds.",
+      "index": 29,
+      "start": 207.9603174603174,
+      "end": 213.5220861678004
+    },
+    {
+      "scene": "architecture",
+      "text": "Under the hood, the frontend is React nineteen with Vite, and the API is FastAPI with Pydantic and asynchronous PyMongo.",
+      "index": 30,
+      "start": 213.76208616780042,
+      "end": 220.35464852607706
+    },
+    {
+      "scene": "architecture",
+      "text": "Authentication uses signed JWT sessions and bcrypt passwords. Agent credentials are hashed, revocable, and bound to a single agent identity.",
+      "index": 31,
+      "start": 220.59464852607707,
+      "end": 228.84358276643988
+    },
+    {
+      "scene": "architecture",
+      "text": "RAG retrieval is workspace-scoped, using MongoDB Atlas vector search when available and a local cosine-search fallback for development.",
+      "index": 32,
+      "start": 229.0835827664399,
+      "end": 236.13995464852604
+    },
+    {
+      "scene": "architecture",
+      "text": "The payment layer creates Razorpay orders only for allowed or human-approved decisions, then verifies checkout signatures and signed, idempotent webhooks on the server.",
+      "index": 33,
+      "start": 236.37995464852605,
+      "end": 244.7901587301587
+    },
+    {
+      "scene": "audit",
+      "text": "Finally, the audit log records server-side events for authorization requests, policy outcomes, approval changes, and payment activity.",
+      "index": 34,
+      "start": 245.03015873015872,
+      "end": 252.97514739229024
+    },
+    {
+      "scene": "audit",
+      "text": "That gives developers and reviewers a traceable answer to who requested a payment, what policy ran, why the decision happened, and whether money moved.",
+      "index": 35,
+      "start": 253.21514739229025,
+      "end": 260.7390476190476
+    },
+    {
+      "scene": "closing",
+      "text": "AgentGuard helps autonomous systems spend safely without removing useful autonomy from legitimate agents.",
+      "index": 36,
+      "start": 260.9790476190476,
+      "end": 266.32961451247166
+    },
+    {
+      "scene": "closing",
+      "text": "It combines deterministic controls, explainable risk, policy-grounded AI reasoning, human review, and Razorpay Test Mode in one working flow.",
+      "index": 37,
+      "start": 266.5696145124716,
+      "end": 274.74176870748295
+    },
+    {
+      "scene": "closing",
+      "text": "AI agents get intelligence. They do not get unrestricted authority. Thank you.",
+      "index": 38,
+      "start": 274.98176870748296,
+      "end": 279.47342403628113
+    }
+  ]
+}
