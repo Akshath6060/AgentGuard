@@ -1,0 +1,12 @@
+{
+  "name": "AgentGuard — AI Payment Governance",
+  "short_name": "AgentGuard",
+  "description": "Govern, monitor, and protect autonomous AI agent payments.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F7F8FA",
+  "theme_color": "#312E81",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

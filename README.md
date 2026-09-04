@@ -76,6 +76,8 @@ docker compose --env-file .env.production -f docker-compose.production.yml ps
 
 Terminate TLS at your load balancer or ingress and forward traffic to `APP_PORT`. The API refuses to start in production with the demo JWT secret, an HTTP browser origin, an unsupported payment mode, or incomplete Razorpay credentials. Use `/api/health` for liveness and `/api/ready` for MongoDB readiness. API docs remain available locally but are disabled in production.
 
+Set `PUBLIC_SITE_URL` to the canonical HTTPS origin. The production build injects absolute canonical and social-preview URLs, while authenticated workspace views and API responses are marked `noindex` to keep customer and payment data out of search results.
+
 Before real payments, use Razorpay live keys only in a `live` workspace, configure the signed webhook endpoint at `https://your-domain/api/v1/payments/razorpay/webhook`, and run your provider reconciliation and disaster-recovery checks. Do not run `seed.py` in production.
 
 ## Authorization example

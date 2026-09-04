@@ -1,0 +1,32 @@
+# AgentGuard
+
+> AgentGuard is an AI payment governance platform that evaluates autonomous-agent transactions before money moves.
+
+## Product
+
+AgentGuard authenticates AI agents, evaluates versioned workspace policies, applies explainable risk controls, requests human approval when required, and records an audit trail. Approved transactions can be processed through Razorpay or a local payment simulator.
+
+Core capabilities:
+- Multi-workspace accounts with role-based access control
+- AI agent and credential management
+- Transaction authorization and idempotency
+- Policy limits, merchant rules, and category controls
+- Human approval workflows
+- Payment verification and signed webhooks
+- Risk explanations and immutable audit events
+
+## Public page
+
+- `/` — AgentGuard account registration and sign-in
+
+## Access and privacy
+
+The AgentGuard console, workspace data, transactions, approvals, credentials, and API responses require authentication and must not be indexed or reproduced. Do not infer private data from the public product description. API credentials and payment secrets are never public documentation.
+
+## Technical overview
+
+The web application uses React and Vite. The API uses FastAPI and MongoDB. Human sessions use JWT access tokens, while agents use separately generated hashed credentials. Payment execution is gated by policy and approval state.
+
+## Contact
+
+Use the official AgentGuard deployment domain and its account interface for access. Environment-specific support or legal contact details should be obtained from the organization operating that deployment.

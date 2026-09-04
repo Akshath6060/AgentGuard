@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title description">
+  <title id="title">AgentGuard — AI Payment Governance</title>
+  <desc id="description">Secure payments for autonomous AI agents before the money moves.</desc>
+  <defs>
+    <linearGradient id="background" x1="80" y1="40" x2="1120" y2="590" gradientUnits="userSpaceOnUse"><stop stop-color="#111C4E"/><stop offset="1" stop-color="#312E81"/></linearGradient>
+    <linearGradient id="mark" x1="115" y1="128" x2="355" y2="368" gradientUnits="userSpaceOnUse"><stop stop-color="#6366F1"/><stop offset="1" stop-color="#312E81"/></linearGradient>
+  </defs>
+  <rect width="1200" height="630" rx="36" fill="url(#background)"/>
+  <circle cx="1080" cy="100" r="260" fill="#6366F1" opacity=".12"/>
+  <circle cx="1030" cy="570" r="340" fill="#22D3EE" opacity=".06"/>
+  <rect x="90" y="105" width="280" height="280" rx="76" fill="url(#mark)" stroke="#818CF8" stroke-width="3"/>
+  <path d="M230 157.5 300 183v53.2c0 42.7-28.7 71.4-70 89.6-41.3-18.2-70-46.9-70-89.6V183l70-25.5Z" fill="none" stroke="#fff" stroke-width="15" stroke-linejoin="round"/>
+  <path d="m196.4 240.1 21.7 21.7 46.2-49" fill="none" stroke="#A5F3FC" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="297.9" cy="172.8" r="15.4" fill="#67E8F9"/>
+  <text x="430" y="203" fill="#fff" font-family="Inter,Arial,sans-serif" font-size="72" font-weight="700" letter-spacing="-2">AgentGuard</text>
+  <text x="430" y="270" fill="#A5B4FC" font-family="Inter,Arial,sans-serif" font-size="28" font-weight="600" letter-spacing="3">AI PAYMENT GOVERNANCE</text>
+  <text x="90" y="485" fill="#fff" font-family="Inter,Arial,sans-serif" font-size="43" font-weight="600">Secure every agent payment</text>
+  <text x="90" y="545" fill="#CBD5E1" font-family="Inter,Arial,sans-serif" font-size="31">Policy controls · Human approvals · Complete audit trails</text>
+</svg>

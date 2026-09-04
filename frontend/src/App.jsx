@@ -21,7 +21,9 @@ import AuditLogs from './pages/AuditLogs'
 import Developers from './pages/Developers'
 import Settings from './pages/Settings'
 import Admin from './pages/Admin'
+import NotFound from './pages/NotFound'
 import { Logo } from './components/Icons'
+import { useSeo } from './hooks/useSeo'
 
 const presentWorkspace = (workspace) => ({
   ...workspace,
@@ -32,6 +34,7 @@ const presentWorkspace = (workspace) => ({
 })
 
 export default function App() {
+  const notFound = !['/', '/index.html'].includes(window.location.pathname)
   const [booting, setBooting] = useState(hasStoredSession)
   const [screen, setScreen] = useState('login')
   const [page, setPage] = useState('overview')
@@ -49,6 +52,8 @@ export default function App() {
   const [dashboard, setDashboard] = useState(null)
   const [agentId, setAgentId] = useState(null)
 
+  useSeo(notFound ? 'notfound' : screen, page, booting && !notFound)
+
   const [policyOpen, setPolicyOpen] = useState(false)
   const [agentModalOpen, setAgentModalOpen] = useState(false)
 
@@ -64,7 +69,7 @@ export default function App() {
   useEffect(() => () => clearTimeout(toastTimer.current), [])
 
   useEffect(() => {
-    if (!hasStoredSession()) return
+    if (notFound || !hasStoredSession()) return
     Promise.all([api.me(), api.workspaces(), api.workspace()])
       .then(([currentUser, available, currentWorkspace]) => {
         const items = available.items.map(presentWorkspace)
@@ -74,7 +79,7 @@ export default function App() {
       })
       .catch(() => { setSession('', ''); setScreen('login') })
       .finally(() => setBooting(false))
-  }, [])
+  }, [notFound])
 
   useEffect(() => {
     if (!navOpen) return undefined
@@ -131,6 +136,8 @@ export default function App() {
   }
 
   useEffect(() => { if (screen === 'app' && workspace) refresh() }, [screen, workspace, refresh])
+
+  if (notFound) return <NotFound />
 
   if (booting) {
     return <main className="ag-fatal" aria-busy="true"><Logo size={48} /><h1>Loading AgentGuard</h1><p>Restoring your secure workspace…</p></main>

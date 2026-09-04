@@ -44,6 +44,7 @@ services:
       context: ./frontend
       args:
         VITE_API_BASE_URL: /api
+        VITE_PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:?Set the public HTTPS site URL}
     restart: unless-stopped
     ports:
       - "${APP_PORT:-8080}:8080"
