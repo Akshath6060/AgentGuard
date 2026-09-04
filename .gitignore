@@ -74,3 +74,6 @@ temp/
 # Operating-system files
 .DS_Store
 Thumbs.db
+
+# Generated demo video
+/scripts/demo-video/AgentGuard-Razorpay-Buildathon-Demo.mp4
