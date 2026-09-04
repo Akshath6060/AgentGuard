@@ -23,7 +23,7 @@ export default function Topbar({ title, user, menuOpen, navOpen, onOpenNav, onTo
 
       <div className="ag-search ag-topbar-search" style={{ marginLeft: 12, background: '#F7F8FA', height: 36, width: 300 }}>
         <Search />
-        <input placeholder="Search agents, transactions, merchants" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && query.trim()) onSearch(query.trim()) }} />
+        <input aria-label="Search agents, transactions and merchants" placeholder="Search agents, transactions, merchants" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && query.trim()) onSearch(query.trim()) }} />
       </div>
 
       <div style={{ flex: 1 }} />

@@ -33,6 +33,8 @@ class Settings(BaseSettings):
     rag_top_k: int = Field(default=5, ge=1, le=20)
     mongodb_vector_index: str = "policy_chunks_vector"
     ai_rate_limit_per_minute: int = Field(default=30, ge=1, le=1000)
+    login_rate_limit_per_minute: int = Field(default=10, ge=1, le=1000)
+    register_rate_limit_per_minute: int = Field(default=5, ge=1, le=1000)
 
     @field_validator("app_env", "payment_mode", "ai_policy_provider", "embedding_provider", "llm_provider", mode="before")
     @classmethod

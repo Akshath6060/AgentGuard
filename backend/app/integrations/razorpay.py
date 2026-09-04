@@ -16,8 +16,14 @@ async def create_order(amount: int, currency: str, receipt: str):
 
 
 def verify_webhook(body: bytes, signature: str):
-    if not settings.razorpay_webhook_secret:
-        return settings.payment_mode == "mock"
+    """Webhooks are only trusted when a shared secret is configured and the HMAC matches.
+
+    Without a configured secret there is no way to authenticate the caller, so the
+    event is rejected rather than trusted - an unsigned webhook could otherwise
+    rewrite the payment state of any transaction.
+    """
+    if not settings.razorpay_webhook_secret or not signature:
+        return False
     expected = hmac.new(settings.razorpay_webhook_secret.encode(), body, hashlib.sha256).hexdigest()
     return hmac.compare_digest(expected, signature)
 

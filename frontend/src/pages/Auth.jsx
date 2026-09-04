@@ -74,11 +74,11 @@ function Login({ onSubmit, onRegister }) {
         Use your work account to access the AgentGuard console.
       </p>
 
-      <label className="ag-label">Work email</label>
-      <input className="ag-input" style={{ marginBottom: 14 }} value={email} onChange={(e) => setEmail(e.target.value)} />
+      <label className="ag-label" htmlFor="signin-email">Work email</label>
+      <input id="signin-email" name="email" type="email" autoComplete="email" className="ag-input" style={{ marginBottom: 14 }} value={email} onChange={(e) => setEmail(e.target.value)} />
 
-      <label className="ag-label">Password</label>
-      <input className="ag-input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+      <label className="ag-label" htmlFor="signin-password">Password</label>
+      <input id="signin-password" name="password" autoComplete="current-password" className="ag-input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '12px 0 20px' }}>
         <span
@@ -131,14 +131,14 @@ function Register({ onSubmit, onBack }) {
     <div className="ag-rise">
       <h2 style={{ margin: '0 0 6px', fontSize: 24, fontWeight: 600, letterSpacing: '-0.02em' }}>Create your account</h2>
       <p style={{ margin: '0 0 24px', fontSize: 13.5, color: '#6B7280' }}>Your first workspace will be created automatically.</p>
-      <label className="ag-label">Full name</label>
-      <input className="ag-input" style={{ marginBottom: 13 }} value={form.name} onChange={(e) => update('name', e.target.value)} placeholder="Alex Morgan" />
-      <label className="ag-label">Work email</label>
-      <input className="ag-input" type="email" style={{ marginBottom: 13 }} value={form.email} onChange={(e) => update('email', e.target.value)} placeholder="alex@company.com" />
-      <label className="ag-label">Password</label>
-      <input className="ag-input" type="password" style={{ marginBottom: 13 }} value={form.password} onChange={(e) => update('password', e.target.value)} placeholder="At least 8 characters" />
-      <label className="ag-label">Workspace name</label>
-      <input className="ag-input" value={form.workspace_name} onChange={(e) => update('workspace_name', e.target.value)} placeholder="Acme Operations" />
+      <label className="ag-label" htmlFor="signup-name">Full name</label>
+      <input id="signup-name" name="name" autoComplete="name" className="ag-input" style={{ marginBottom: 13 }} value={form.name} onChange={(e) => update('name', e.target.value)} placeholder="Alex Morgan" />
+      <label className="ag-label" htmlFor="signup-email">Work email</label>
+      <input id="signup-email" name="email" autoComplete="email" className="ag-input" type="email" style={{ marginBottom: 13 }} value={form.email} onChange={(e) => update('email', e.target.value)} placeholder="alex@company.com" />
+      <label className="ag-label" htmlFor="signup-password">Password</label>
+      <input id="signup-password" name="password" autoComplete="new-password" className="ag-input" type="password" style={{ marginBottom: 13 }} value={form.password} onChange={(e) => update('password', e.target.value)} placeholder="At least 8 characters" />
+      <label className="ag-label" htmlFor="signup-workspace">Workspace name</label>
+      <input id="signup-workspace" name="organization" autoComplete="organization" className="ag-input" value={form.workspace_name} onChange={(e) => update('workspace_name', e.target.value)} placeholder="Acme Operations" />
       <button disabled={busy} className="ag-btn ag-btn-primary" style={{ width: '100%', height: 44, fontSize: 14, marginTop: 20 }} onClick={submit}>{busy ? 'Creating account…' : 'Create account'}</button>
       <button className="ag-btn" style={{ width: '100%', height: 44, fontSize: 13.5, marginTop: 10 }} onClick={onBack}>Back to sign in</button>
     </div>
