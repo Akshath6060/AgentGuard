@@ -10,9 +10,9 @@ from .utils import now, secret_hash
 
 settings = get_settings()
 ROLE_PERMISSIONS = {
-    "admin": {"read", "agents.manage", "policies.manage", "approvals.decide", "keys.manage", "settings.manage"},
-    "approver": {"read", "approvals.decide"},
-    "developer": {"read", "keys.manage"},
+    "admin": {"read", "agents.manage", "policies.manage", "approvals.decide", "authorizations.create", "payments.verify", "keys.manage", "settings.manage"},
+    "approver": {"read", "approvals.decide", "payments.verify"},
+    "developer": {"read", "authorizations.create", "payments.verify", "keys.manage"},
     "viewer": {"read"},
 }
 

@@ -96,6 +96,7 @@ export const api = {
   ragSearch: (query, limit = 5) => request('/v1/rag/search', { method: 'POST', body: JSON.stringify({ query, limit }) }),
   transactions: (params = {}) => request(`/v1/transactions?${new URLSearchParams(Object.entries(params).filter(([, v]) => v))}`),
   transaction: (id) => request(`/v1/transactions/${id}`),
+  authorizePayment: (body) => request('/v1/transactions/dashboard-authorize', { method: 'POST', body: JSON.stringify(body) }),
   approvals: () => request('/v1/approvals?status=pending'),
   decide: (id, decision, version, comment = '') => request(`/v1/approvals/${id}/decision`, { method: 'POST', body: JSON.stringify({ decision, version, comment }) }),
   verifyPayment: (body) => request('/v1/payments/razorpay/verify', { method: 'POST', body: JSON.stringify(body) }),

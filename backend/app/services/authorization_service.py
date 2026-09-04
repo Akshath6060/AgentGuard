@@ -37,12 +37,13 @@ async def _spend(workspace_id, agent_id):
 
 def response(tx):
     approval = tx.get("approval")
-    return clean({"transaction_id": tx["transaction_id"], "decision": tx["decision"], "decision_state": tx["decision_state"], "risk": {k: tx["risk"][k] for k in ["score", "band", "version"]}, "reason_codes": tx["reason_codes"], "policy": {"id": tx["policy_evaluation"]["policy_id"], "version": tx["policy_evaluation"]["policy_version"]}, "approval": approval, "allowed_actions": tx.get("allowed_actions", ["view"]), "request_id": tx["request_id"], "created_at": tx["created_at"]})
+    return clean({"transaction_id": tx["transaction_id"], "decision": tx["decision"], "decision_state": tx["decision_state"], "risk": {k: tx["risk"][k] for k in ["score", "band", "version"]}, "reason_codes": tx["reason_codes"], "policy": {"id": tx["policy_evaluation"]["policy_id"], "version": tx["policy_evaluation"]["policy_version"]}, "approval": approval, "payment": tx.get("payment"), "allowed_actions": tx.get("allowed_actions", ["view"]), "request_id": tx["request_id"], "created_at": tx["created_at"]})
 
 
 async def authorize(req, credential, request_id):
     start = perf_counter(); trace = []
     workspace_id, agent_id = credential["workspace_id"], req["agent_id"]
+    actor = credential.get("actor") or {"type": "agent", "id": agent_id}
     if credential["agent_id"] != agent_id:
         raise HTTPException(403, "Credential is not valid for this agent")
     agent = await db.agents.find_one({"workspace_id": workspace_id, "agent_id": agent_id})
@@ -59,7 +60,7 @@ async def authorize(req, credential, request_id):
         existing = await db.transactions.find_one({"workspace_id": workspace_id, "agent_id": agent_id, "idempotency_key": req["idempotency_key"]})
         if existing and existing.get("decision") != "evaluating": return response(existing)
         raise HTTPException(409, "Authorization with this idempotency key is still evaluating")
-    await audit(workspace_id, {"type": "agent", "id": agent_id}, "authorization.received", "transaction", transaction_id, request_id)
+    await audit(workspace_id, actor, "authorization.received", "transaction", transaction_id, request_id)
     mark = perf_counter()
     policy = await db.policies.find_one({"workspace_id": workspace_id, "policy_id": agent.get("policy_id"), "status": "active"}, sort=[("version", -1)])
     if not policy:
@@ -67,6 +68,8 @@ async def authorize(req, credential, request_id):
         raise HTTPException(409, "No active policy assigned")
     trace.append({"step": "policy_resolution", "duration_ms": round((perf_counter() - mark) * 1000, 3)})
     history = await _history(workspace_id, agent_id, req); spend = await _spend(workspace_id, agent_id)
+    if credential.get("dashboard"):
+        req["merchant"]["verification_status"] = "verified" if history["merchant_known"] else "new"
     req["merchant_known"] = history["merchant_known"]
     req["duplicate_payment"] = history["duplicate_payment"]
     mark = perf_counter(); policy_result = evaluate(policy["rules"], req, spend, history["recent_failures"])
@@ -94,8 +97,8 @@ async def authorize(req, credential, request_id):
     if approval_summary:
         await db.approvals.insert_one({**approval_summary, "transaction_id": transaction_id, "workspace_id": workspace_id, "requested_by_agent":agent_id,"reason":"; ".join(reason_codes),"risk_score":risk["score"],"policies_used":[p["policy_id"] for p in retrieved],"approval_status":"PENDING", "reason_codes": reason_codes, "requested_at": received, "created_at": received, "decided_by": None, "decided_at": None,"approved_by":None,"approved_at":None,"rejected_by":None,"rejected_at":None,"rejection_reason":None, "comment": None, "version": 1})
     action = {"approved": "authorization.approved", "review": "authorization.review_required", "blocked": "authorization.blocked"}[decision]
-    await audit(workspace_id, {"type": "agent", "id": agent_id}, action, "transaction", transaction_id, request_id, {"reason_codes": reason_codes})
+    await audit(workspace_id, actor, action, "transaction", transaction_id, request_id, {"reason_codes": reason_codes})
     await db.decision_audits.insert_one({"transaction_id":transaction_id,"agent_id":agent_id,"workspace_id":workspace_id,"organization_id":workspace_id,"timestamp":now(),"transaction_details":{"amount":document["amount"],"merchant":document["merchant"],"purpose":document["purpose"]},"deterministic_rule_results":policy_result["checks"],"retrieved_policy_ids":[p["policy_id"] for p in retrieved],"retrieved_policy_titles":[p["policy_title"] for p in retrieved],"relevant_policy_snippets":[p["text"] for p in retrieved],"rag_analysis":rag_analysis,"risk_score":risk["score"],"final_decision":decision,"approval_status":approval_summary["status"] if approval_summary else None,"razorpay_response":None,"created_at":now()})
     if decision == "approved":
-        document["payment"] = await initiate(transaction_id, workspace_id, {"type": "agent", "id": agent_id}, request_id)
+        document["payment"] = await initiate(transaction_id, workspace_id, actor, request_id)
     return response(document)

@@ -13,6 +13,7 @@ import Overview from './pages/Overview'
 import Agents from './pages/Agents'
 import AgentProfile from './pages/AgentProfile'
 import Transactions from './pages/Transactions'
+import AuthorizePayment from './pages/AuthorizePayment'
 import TransactionDetail from './pages/TransactionDetail'
 import Approvals from './pages/Approvals'
 import Policies from './pages/Policies'
@@ -172,6 +173,7 @@ export default function App() {
     agents: <Agents agents={agents} onOpenAgent={(id) => { setAgentId(id); setPage('agentProfile') }} onAddAgent={openAddAgent} />,
     agentProfile: <AgentProfile agentId={agentId} onBack={() => setPage('agents')} onToast={say} onChanged={refresh} />,
     transactions: <Transactions transactions={transactions} agents={agents} onSearch={async (params) => setTransactions((await api.transactions(params)).items)} onOpenTx={openTx} />,
+    authorize: <AuthorizePayment agents={agents} user={user} onToast={say} onChanged={refresh} onView={openTx} />,
     detail: <TransactionDetail txId={txId} onBack={() => setPage('transactions')} onToast={say} onChanged={refresh} checkoutCustomer={user} />,
     approvals: (
       <Approvals

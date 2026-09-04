@@ -10,7 +10,7 @@ from ..utils import clean,now
 router=APIRouter(prefix="/v1/payments",tags=["payments"])
 
 @router.post("/razorpay/verify")
-async def verify_checkout(body:RazorpayPaymentVerification,request:Request,user=Depends(require("approvals.decide"))):
+async def verify_checkout(body:RazorpayPaymentVerification,request:Request,user=Depends(require("payments.verify"))):
     tx=await db.transactions.find_one({"workspace_id":user["workspace_id"],"transaction_id":body.transaction_id})
     if not tx:raise HTTPException(404,"Transaction not found")
     payment=tx.get("payment",{})

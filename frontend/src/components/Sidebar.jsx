@@ -3,6 +3,7 @@ import { Logo, Grid, Robot, Card, Shield, CircleCheck, ShieldAlert, Doc, Code, G
 const MONITOR = [
   { id: 'overview', label: 'Overview', Icon: Grid },
   { id: 'agents', label: 'Agents', Icon: Robot, alias: ['agentProfile'] },
+  { id: 'authorize', label: 'Authorize Payment', Icon: Card, roles: ['admin', 'developer'] },
   { id: 'transactions', label: 'Transactions', Icon: Card, alias: ['detail'] },
 ]
 
@@ -53,7 +54,7 @@ export default function Sidebar({ page, onNavigate, workspace, pendingCount, ope
 
       <nav className="ag-nav">
         <span className="ag-nav-group">MONITOR</span>
-        {MONITOR.map((item) => (
+        {MONITOR.filter((item) => !item.roles || item.roles.includes(workspace.role)).map((item) => (
           <NavButton key={item.id} item={item} page={page} onNavigate={navigate} pendingCount={pendingCount} />
         ))}
 

@@ -181,6 +181,7 @@ export const GENERATED_RULES = [
 
 export const PAGE_TITLES = {
   overview: 'Overview', agents: 'AI Agents', agentProfile: 'Agent Profile', transactions: 'Transactions',
+  authorize: 'Authorize Payment',
   detail: 'Transaction Analysis', approvals: 'Approval Center', policies: 'Policy Intelligence', risk: 'Risk Center',
   audit: 'Audit Logs', admin: 'Workspace Admin', developers: 'Developers', settings: 'Settings',
 }

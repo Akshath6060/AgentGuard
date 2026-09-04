@@ -2,7 +2,7 @@ from datetime import datetime
 import re
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from ..database import db
-from ..security import current_user, agent_identity
+from ..security import current_user, agent_identity, require
 from ..utils import clean
 from ..schemas import AuthorizationRequest
 from ..services.authorization_service import authorize
@@ -15,6 +15,10 @@ def actions(tx,role):
     return result
 @router.post("/evaluate",dependencies=[Depends(ai_rate_limit)])
 async def evaluate_transaction(body:AuthorizationRequest,request:Request,credential=Depends(agent_identity)):
+    return await authorize(body.model_dump(),credential,request.state.request_id)
+@router.post("/dashboard-authorize",dependencies=[Depends(ai_rate_limit)])
+async def dashboard_authorize(body:AuthorizationRequest,request:Request,user=Depends(require("authorizations.create"))):
+    credential={"workspace_id":user["workspace_id"],"agent_id":body.agent_id,"dashboard":True,"actor":{"type":"user","id":user["user_id"]}}
     return await authorize(body.model_dump(),credential,request.state.request_id)
 @router.get("")
 async def list_transactions(q:str|None=None,agent_id:str|None=None,decision:str|None=None,risk_band:str|None=None,status:str|None=None,from_date:datetime|None=None,to_date:datetime|None=None,limit:int=Query(50,ge=1,le=200),cursor:datetime|None=None,user=Depends(current_user)):
